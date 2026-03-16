@@ -47,6 +47,20 @@ const AddaLayout = () => {
     location.pathname === "/adda/user-profile";
 
   useEffect(() => {
+    if (isSignedIn) return;
+
+    const alreadyShown = sessionStorage.getItem("welcomeModalShown");
+    if (alreadyShown) return;
+
+    const timer = setTimeout(() => {
+      setShowWelcome(true);
+      sessionStorage.setItem("welcomeModalShown", "true");
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [isSignedIn]);
+
+  useEffect(() => {
     const loadInitial = async () => {
       const token = await getToken();
       if (token) {
@@ -161,7 +175,7 @@ const AddaLayout = () => {
       <div className="flex justify-center w-full min-h-screen">
         <div className="w-full max-w-8xl">
           <div ref={topNavRef} className=" bg-white">
-            <div className="overflow-x-auto pt-[20px] md:pt-[30px]">
+            <div className="overflow-x-auto pt-[20px] ">
               <ProductScrollNav
                 productsData={productsData}
                 loading={loading}
@@ -260,7 +274,9 @@ const AddaLayout = () => {
         </div>
       )}
 
-      {showWelcome && <WelcomeModal onClose={() => setShowWelcome(false)} />}
+      {showWelcome && !isSignedIn && (
+        <WelcomeModal onClose={() => setShowWelcome(false)} />
+      )}
     </>
   );
 };
