@@ -26,7 +26,7 @@ const QuizBanner = ({ categories }: QuizBanner) => {
 
           <div className="ml-6 md:ml-20 space-y-6 max-w-3xl p-6 relative z-10 ">
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white leading-tight">
-              Challenge Your Mind with Fun Quizzes!
+              Challenge Your Mind with Mentoons Quizzes!
             </h1>
             <p className="text-lg md:text-2xl font-medium text-white opacity-90">
               Test your knowledge, sharpen your logic, and enjoy hours of

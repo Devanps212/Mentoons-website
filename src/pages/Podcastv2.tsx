@@ -49,10 +49,6 @@ const Podcastv2 = () => {
   const [isAtStart, setIsAtStart] = useState(true);
   const [isAtEnd, setIsAtEnd] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
-
-  // Single source of truth: which podcast id is playing in the card carousel
-  // or "new-release". The featured <audio controls> player manages itself via
-  // the DOM — we only track it via currentAudioRef below.
   const [playingPodcastId, setPlayingPodcastId] = useState<string | null>(null);
 
   const [message, setMessage] = useState("");
@@ -74,20 +70,9 @@ const Podcastv2 = () => {
     return sessionStorage.getItem("newReleaseAutoPlayed") === "true";
   });
 
-  // ── Global audio manager ─────────────────────────────────────────────────
-  //
-  // currentAudioRef  — the <audio> element that is currently playing
-  // isSwitchingRef   — true for ~100 ms during a player switch so that the
-  //                    outgoing player's onPause is not treated as a user pause
-  //
-  // switchTo(audio) — pauses the current player (with flag set), then marks
-  //                   the new audio as current. Does NOT call .play() — the
-  //                   caller or the browser does that.
-  //
-  // stopAll()        — pauses current player and clears state
-  //
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
   const isSwitchingRef = useRef(false);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   const switchTo = useCallback((incoming: HTMLAudioElement) => {
     const outgoing = currentAudioRef.current;
@@ -114,18 +99,11 @@ const Podcastv2 = () => {
     setPlayingPodcastId(null);
   }, []);
 
-  // Called by PodcastCard on mount so we always know every card's audio ref
   const registerCardAudio = useCallback((audio: HTMLAudioElement) => {
-    // Only update currentAudioRef when this card is actually the active one;
-    // for idle cards we just store a weak reference via the DOM.
-    // (The card's own useEffect calls play/pause imperatively.)
-    // We expose this so the featured player can pause it via switchTo().
     if (!audio.paused) {
       currentAudioRef.current = audio;
     }
   }, []);
-
-  // ─────────────────────────────────────────────────────────────────────────
 
   const { isSignedIn, user } = useUser();
   const { getToken } = useAuth();
@@ -153,6 +131,12 @@ const Podcastv2 = () => {
 
   const handleSelectedCategory = (category: string) => {
     setSelectedCategory(category);
+    setTimeout(() => {
+      resultsRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 80);
   };
 
   const handleSubmit = async (
@@ -490,7 +474,8 @@ const Podcastv2 = () => {
             </div>
           </div>
           <motion.div
-            className="my-12 md:my-0"
+            ref={resultsRef}
+            className="my-12 md:my-0 scroll-mt-6"
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
@@ -546,12 +531,6 @@ const Podcastv2 = () => {
                         </span>
                       </div>
                       <div className="p-4 border rounded-xl backdrop-blur-sm audio-player bg-white/10 border-white/20">
-                        {/*
-                          Featured <audio controls> — browser-native controls.
-                          On play: call switchTo() synchronously to pause any
-                          card/new-release audio via the DOM *before* React
-                          state updates, so this starts on the first click.
-                        */}
                         <audio
                           key={currentPodcastIndex}
                           className="w-full"
@@ -565,11 +544,8 @@ const Podcastv2 = () => {
                             )?.sampleUrl || "#"
                           }
                           onPlay={async (e) => {
-                            // 1. Synchronously pause any other audio via DOM
                             switchTo(e.currentTarget);
-                            // 2. Clear card / new-release React state
                             setPlayingPodcastId(null);
-                            // 3. Check access
                             const hasAccess =
                               await checkAccessAndControlPlayback(
                                 filteredPodcast[currentPodcastIndex],
@@ -695,11 +671,8 @@ const Podcastv2 = () => {
                 isPlaying={playingPodcastId === String(podcast._id)}
                 onPlayToggle={(podcastId) => {
                   if (playingPodcastId === podcastId) {
-                    // User paused this card
                     stopAll();
                   } else {
-                    // Stop featured / new-release audio synchronously via DOM,
-                    // then update state — card's useEffect will call .play()
                     stopAll();
                     setPlayingPodcastId(podcastId);
                   }
@@ -864,7 +837,6 @@ const Podcastv2 = () => {
                       if (playingPodcastId === "new-release") {
                         stopAll();
                       } else {
-                        // Stop anything currently playing via DOM first
                         stopAll();
                         setPlayingPodcastId("new-release");
                       }
@@ -1118,7 +1090,6 @@ const Podcastv2 = () => {
           message={ModalMessage.ENQUIRY_MESSAGE}
         />
       )}
-    {/* <PlayPauseButton /> */}
     </>
   );
 };

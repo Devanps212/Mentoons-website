@@ -860,7 +860,7 @@ const ComicsPageV2 = () => {
         </div>
         <div className="relative flex-1">
           <h2 className="pt-8 text-5xl md:text-7xl md:pt-4 font-semibold text-center luckiest-guy-regular text-black [-webkit-text-stroke:_1px_black] pr-8">
-            Why our workshops matter?
+            Why our Comics matter?
           </h2>
         </div>
       </motion.div>

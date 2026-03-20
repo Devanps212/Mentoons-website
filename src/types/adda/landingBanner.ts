@@ -20,4 +20,10 @@ export interface Slide {
   badges: string[];
   highlightWord: string;
   link: string;
+  items?: Array<{
+    name: string;
+    link: string;
+    image?: string;
+    color?: string;
+  }>;
 }
