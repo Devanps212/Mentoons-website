@@ -2,7 +2,6 @@ import { Tag, X } from "lucide-react";
 import "./groupForm.css";
 import { FormData } from "@/pages/v2/community/community";
 
-
 interface ParentGroup {
   id: string;
   name: string;
@@ -332,7 +331,7 @@ const GroupFormModal = ({
                   </div>
                 )}
 
-                {formData.tags.length === 0 && (
+                {formData && formData.tags && formData.tags.length === 0 && (
                   <p className="text-xs text-gray-400 text-center py-2">
                     No tags yet — add some! ✨
                   </p>

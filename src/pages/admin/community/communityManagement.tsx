@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@clerk/clerk-react";
 import ErrorDisplay from "@/components/adda/userProfile/loader/errorDisplay";
 import SuccessDisplay from "@/components/adda/userProfile/loader/successDisplay";
