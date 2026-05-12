@@ -3,6 +3,10 @@ import AdminProtectedRoute from "@/components/admin/auth/adminRoute";
 // import AddEditEmployeePage from "@/pages/admin/addEmployee";
 import AddProduct from "@/pages/admin/addProduct";
 import AllottedCalls from "@/pages/admin/allottedCalls";
+import AddNewBadge from "@/pages/admin/badge/addBadge";
+import BadgeManagement from "@/pages/admin/badge/badgeManagement";
+import AddCommunity from "@/pages/admin/community/addCommunity";
+import AllCommunities from "@/pages/admin/community/communityManagement";
 // import AllottedCalls from "@/pages/admin/allottedCalls";
 import DashboardAnalytics from "@/pages/admin/dashboard";
 import AdminAttendanceView from "@/pages/admin/employee/attendance";
@@ -91,6 +95,15 @@ const AdminRouter = () => {
           <Route path="meetups" element={<AllMeetups />} />
           <Route path="psychologists" element={<PsychologistsTable />} />
           <Route path="freelancers" element={<FreelancersTable />} />
+
+          {/*Community Groups */}
+          <Route path="/community" element={<AllCommunities />} />
+          <Route path="/add-community" element={<AddCommunity />} />
+          <Route path="/add-community/:id" element={<AddCommunity />} />
+
+          {/*Badge */}
+          <Route path="badge" element={<BadgeManagement />} />
+          <Route path="add-badge" element={<AddNewBadge />} />
 
           <Route path="profile" element={<AdminProfile />} />
           <Route path="notifications" element={<AdminNotification />} />

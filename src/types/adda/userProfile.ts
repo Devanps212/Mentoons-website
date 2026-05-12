@@ -119,6 +119,26 @@ export interface ProfilePost {
   createdAt: string;
 }
 
+export interface Badge {
+  _id?: string;
+  name: string;
+  description?: string;
+  criteria: {
+    action: string;
+    field: "count" | "days" | "pages";
+    operator: ">=" | "<=" | ">" | "<" | "==";
+    value: number;
+  };
+  animation?: string;
+  image: string;
+  xp: number;
+}
+
+export interface UserBadge {
+  badge: Badge;
+  earnedAt: string;
+}
+
 export interface ProfileUserDetails {
   _id: string;
   name: string;
@@ -137,6 +157,7 @@ export interface ProfileUserDetails {
   gender?: string;
   socialLinks?: Array<{ label: string; url: string }>;
   joinedDate?: string;
+  badges?: UserBadge[];
 }
 
 export type ProfileTabTypes =

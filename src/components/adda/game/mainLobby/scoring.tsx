@@ -136,7 +136,7 @@ const ScoringDashboard = ({
                 <h3 className="text-xl font-semibold text-white">Your Rank</h3>
               </div>
               <p className="text-4xl font-bold text-cyan-400">
-                {currentUser ? `#${currentUser.rank}` : "N/A"}
+                {currentUser ? `#${currentUser.rank}` : "0"}
               </p>
             </div>
 

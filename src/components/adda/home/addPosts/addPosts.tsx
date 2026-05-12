@@ -13,6 +13,7 @@ import { FiUser } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import PostUpload from "../modal/postUpload";
 import ErrorModal from "../../modal/error";
+import { useBadge } from "@/context/adda/badgeContext";
 
 interface PostData {
   _id: string;
@@ -85,9 +86,10 @@ const AddPosts = forwardRef<AddPostsRef, AddPostsProps>(
       actionText?: string;
       onAction?: () => void;
     }>({ error: "", action: "nav" });
+    const { showBadge } = useBadge();
+
     const navigate = useNavigate();
 
-    // Handle clipboard paste event
     useEffect(() => {
       const handlePaste = (event: ClipboardEvent) => {
         const items = event.clipboardData?.items;
@@ -188,6 +190,8 @@ const AddPosts = forwardRef<AddPostsRef, AddPostsProps>(
           },
         });
 
+        console.log("response data : ", response.data.badge);
+
         if (response.data.success) {
           setTextContent("");
           setIsTextInputActive(false);
@@ -202,6 +206,14 @@ const AddPosts = forwardRef<AddPostsRef, AddPostsProps>(
             typeof response.data.data === "object"
           ) {
             postData = response.data.data;
+          }
+
+          if (response.data.badge) {
+            showBadge(response.data.badge);
+          }
+
+          if (response.data.badges && Array.isArray(response.data.badges)) {
+            showBadge(response.data.badges);
           }
 
           const structuredPost: PostData = {

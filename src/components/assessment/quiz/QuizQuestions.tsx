@@ -57,6 +57,7 @@ const QuizQuestions: React.FC<QuizQuestionProps> = ({
   onClosePaymentModal,
 }) => {
   const question = quiz.questions[currentQuestion];
+
   if (!question) return null;
 
   const progressVariants = {

@@ -3,6 +3,7 @@ import { Slide } from "@/types";
 export const SLIDES: Slide[] = [
   {
     id: 1,
+    img: "/assets/home/newPage/bg/banner/plan banner.png",
     tag: "⚡ LIMITED OFFER",
     headline: "3 Day Trial",
     highlightWord: "Trial",
@@ -25,6 +26,7 @@ export const SLIDES: Slide[] = [
   },
   {
     id: 2,
+    img: "/assets/home/newPage/bg/banner/workshop banner.png",
     tag: "🎓 WORKSHOPS",
     headline: "Workshops",
     highlightWord: "Workshops",
@@ -61,6 +63,7 @@ export const SLIDES: Slide[] = [
   },
   {
     id: 3,
+    img: "/assets/home/newPage/bg/banner/Products banner.png",
     tag: "🛍️ PRODUCTS",
     headline: "Products",
     highlightWord: "Products",
@@ -108,6 +111,7 @@ export const SLIDES: Slide[] = [
   },
   {
     id: 4,
+    img: "/assets/home/newPage/bg/banner/podcast banner.png",
     tag: "🎧 PODCASTS",
     headline: "Podcasts",
     highlightWord: "Podcasts",
@@ -139,6 +143,7 @@ export const SLIDES: Slide[] = [
   },
   {
     id: 5,
+    img: "/assets/home/newPage/bg/banner/comic banner.png",
     tag: "📚 COMICS",
     headline: "Comics",
     highlightWord: "Comics",
@@ -165,6 +170,7 @@ export const SLIDES: Slide[] = [
   },
   {
     id: 6,
+    img: "/assets/home/newPage/bg/banner/Games banner.png",
     tag: "🎮 GAMES",
     headline: "Games",
     highlightWord: "Games",
@@ -211,6 +217,7 @@ export const SLIDES: Slide[] = [
   },
   {
     id: 7,
+    img: "/assets/home/newPage/bg/banner/Quiz banner.png",
     tag: "❓ QUIZ",
     headline: "Quiz",
     highlightWord: "Quiz",

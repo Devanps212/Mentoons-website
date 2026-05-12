@@ -1,545 +1,332 @@
-import React, { useEffect, useRef, useState } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa6";
-import gsap from "gsap";
+import "./banner.css";
 import { SLIDES as IMPORTED_SLIDES } from "@/constant/adda/Landing/slide";
-import { NavLink } from "react-router-dom";
-import OurCoreFlipCard from "@/components/Home/newVersion/ourSourceCode";
-import ItemsPanel from "@/components/Home/newVersion/itemsPanel";
-
-const OUR_CORE_SLIDE = {
-  id: 99,
-  type: "flip",
-  tag: "Our Core",
-  headline: "Discover Our Core",
-  highlightWord: "Core",
-  sub: "Understanding the roots of digital addiction",
-  badges: ["Awareness", "Recovery", "Community"],
-  accent: "#ff6b35",
-  bg: "from-[#0d2137] via-[#0a3d2e] to-[#0f2d1a]",
-  shape: "circle",
-  emoji: "🧠",
-  link: "/community",
-  cta: "Join Community →",
-  items: [],
-};
-
-const SLIDES = [...IMPORTED_SLIDES, OUR_CORE_SLIDE];
-
-const CTA_CONFIG: Record<number, { icon: string; anim: string }> = {
-  1: { icon: "⚡", anim: "cta-icon-zap" },
-  2: { icon: "🎓", anim: "cta-icon-tilt" },
-  3: { icon: "🚀", anim: "cta-icon-rocket" },
-  4: { icon: "🎧", anim: "cta-icon-pulse" },
-  5: { icon: "💥", anim: "cta-icon-smash" },
-  6: { icon: "🕹️", anim: "cta-icon-shake" },
-  7: { icon: "🧩", anim: "cta-icon-spin" },
-  99: { icon: "🧠", anim: "cta-icon-pulse" },
-};
+import { useState } from "react";
 
 const LandingBanner = () => {
-  const [current, setCurrent] = useState<number>(0);
-  const [isAnimating, setIsAnimating] = useState<boolean>(false);
-  const cardRef = useRef<HTMLDivElement>(null);
-  const headlineRef = useRef<HTMLHeadingElement>(null);
-  const subRef = useRef<HTMLParagraphElement>(null);
-  const tagRef = useRef<HTMLDivElement>(null);
-  const badgesRef = useRef<HTMLDivElement>(null);
-  const ctaRef = useRef<HTMLAnchorElement>(null);
-  const shapeRef = useRef<HTMLDivElement>(null);
-  const emojiRef = useRef<HTMLDivElement>(null);
-  const glowRef = useRef<HTMLDivElement>(null);
+  const OUR_CORE_SLIDE = {
+    id: 99,
+    img: "/assets/home/newPage/bg/banner/community banner.png",
+    type: "flip",
+    tag: "Our Core",
+    headline: "Discover Our Core",
+    highlightWord: "Core",
+    sub: "Understanding the roots of digital addiction",
+    badges: ["Awareness", "Recovery", "Community"],
+    accent: "#ff6b35",
+    bg: "from-[#0d2137] via-[#0a3d2e] to-[#0f2d1a]",
+    shape: "circle",
+    emoji: "🧠",
+    link: "/community",
+    cta: "Join Community →",
+    items: [],
+  };
+  const MENTOONS_MYTHOS_SLIDE = {
+    id: 100,
+    img: "/assets/home/newPage/bg/mythos.png",
+    type: "flip",
+    tag: "Mentoons Mythos",
+    headline: "The Inner Cosmos",
+    highlightWord: "Cosmos",
+    sub: "Blending psychology and spiritual guidance to help you understand yourself and your path",
+    badges: ["Psychology", "Spirituality", "Self-Discovery"],
+    accent: "#6c5ce7",
+    bg: "from-[#1a1a2e] via-[#16213e] to-[#0f3460]",
+    shape: "circle",
+    emoji: "🌌",
+    link: "https://mentoonsmythos.com/",
+    cta: "Explore Your Path →",
+    items: [],
+  };
 
-  const animateIn = () => {
-    const tl = gsap.timeline();
-    tl.fromTo(
-      tagRef.current,
-      { y: -24, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.4, ease: "back.out(2.5)" },
-    )
-      .fromTo(
-        headlineRef.current,
-        { y: 50, opacity: 0, skewX: -6 },
-        { y: 0, opacity: 1, skewX: 0, duration: 0.55, ease: "expo.out" },
-        "-=0.15",
-      )
-      .fromTo(
-        subRef.current,
-        { y: 24, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.4, ease: "power3.out" },
-        "-=0.3",
-      )
-      .fromTo(
-        badgesRef.current ? Array.from(badgesRef.current.children) : [],
-        { scale: 0.6, opacity: 0, y: 10 },
-        {
-          scale: 1,
-          opacity: 1,
-          y: 0,
-          duration: 0.35,
-          stagger: 0.07,
-          ease: "back.out(2)",
-        },
-        "-=0.25",
-      )
-      .fromTo(
-        ctaRef.current,
-        { x: -24, opacity: 0 },
-        { x: 0, opacity: 1, duration: 0.4, ease: "power2.out" },
-        "-=0.2",
-      )
-      .fromTo(
-        shapeRef.current,
-        { scale: 0.3, opacity: 0, rotation: -45 },
-        {
-          scale: 1,
-          opacity: 1,
-          rotation: 0,
-          duration: 0.7,
-          ease: "elastic.out(1, 0.55)",
-        },
-        "-=0.55",
-      )
-      .fromTo(
-        emojiRef.current,
-        { scale: 0, opacity: 0, rotation: -20 },
-        {
-          scale: 1,
-          opacity: 1,
-          rotation: 0,
-          duration: 0.45,
-          ease: "back.out(3)",
-        },
-        "-=0.45",
+  const [animating, setAnimating] = useState(false);
+  const [direction, setDirection] = useState("next");
+  const [displaySlide, setDisplaySlide] = useState(0);
+
+  const totalSlides = [
+    ...IMPORTED_SLIDES,
+    OUR_CORE_SLIDE,
+    MENTOONS_MYTHOS_SLIDE,
+  ];
+  const slide = totalSlides[displaySlide];
+
+  const handlePrev = () => {
+    if (animating) return;
+    setDirection("prev");
+    setAnimating(true);
+    setTimeout(() => {
+      setDisplaySlide((prev) =>
+        prev === 0 ? totalSlides.length - 1 : prev - 1,
       );
+      setAnimating(false);
+    }, 500);
   };
 
-  const animateOut = (dir: "next" | "prev", cb: () => void) => {
-    const x = dir === "next" ? -80 : 80;
-    gsap.to(
-      [
-        tagRef.current,
-        headlineRef.current,
-        subRef.current,
-        badgesRef.current,
-        ctaRef.current,
-      ],
-      {
-        x,
-        opacity: 0,
-        duration: 0.28,
-        stagger: 0.03,
-        ease: "power3.in",
-        onComplete: cb,
-      },
-    );
-    gsap.to([shapeRef.current, emojiRef.current], {
-      scale: 0.4,
-      opacity: 0,
-      duration: 0.28,
-      ease: "power2.in",
-    });
-  };
-
-  const go = (dir: "next" | "prev") => {
-    if (isAnimating) return;
-    setIsAnimating(true);
-
-    const nextIndex =
-      dir === "next"
-        ? (current + 1) % SLIDES.length
-        : (current - 1 + SLIDES.length) % SLIDES.length;
-
-    const currentIsFlip = (SLIDES[current] as any).type === "flip";
-    const nextIsFlip = (SLIDES[nextIndex] as any).type === "flip";
-
-    if (currentIsFlip || nextIsFlip) {
-      setCurrent(nextIndex);
-      setIsAnimating(false);
-      return;
-    }
-
-    animateOut(dir, () => {
-      gsap.set(
-        [
-          tagRef.current,
-          headlineRef.current,
-          subRef.current,
-          badgesRef.current,
-          ctaRef.current,
-          shapeRef.current,
-          emojiRef.current,
-        ],
-        { x: 0 },
+  const handleNext = () => {
+    if (animating) return;
+    setDirection("next");
+    setAnimating(true);
+    setTimeout(() => {
+      setDisplaySlide((prev) =>
+        prev === totalSlides.length - 1 ? 0 : prev + 1,
       );
-      setCurrent(nextIndex);
-      setIsAnimating(false);
-    });
+      setAnimating(false);
+    }, 500);
   };
 
-  useEffect(() => {
-    animateIn();
-    if (glowRef.current) {
-      gsap.to(glowRef.current, {
-        opacity: 0.7,
-        duration: 0.6,
-        ease: "power2.out",
-      });
-    }
-  }, [current]);
-
-  useEffect(() => {
-    const floatShape = gsap.to(shapeRef.current, {
-      y: -20,
-      duration: 2.4,
-      repeat: -1,
-      yoyo: true,
-      ease: "sine.inOut",
-    });
-    const floatEmoji = gsap.to(emojiRef.current, {
-      y: -12,
-      rotation: 5,
-      duration: 2.0,
-      repeat: -1,
-      yoyo: true,
-      ease: "sine.inOut",
-      delay: 0.5,
-    });
-    const autoPlay = setInterval(() => go("next"), 15000);
-    return () => {
-      floatShape.kill();
-      floatEmoji.kill();
-      clearInterval(autoPlay);
-    };
-  }, []);
-
-  const slide = SLIDES[current];
-  const headlineParts = slide.headline.split(slide.highlightWord);
-  const isWorkshops = slide.id === 2;
-  const isProducts = slide.id === 3;
-  const imgFitClass = isWorkshops ? "object-contain" : "object-cover";
-  const { icon: ctaIcon, anim: ctaIconAnim } = CTA_CONFIG[slide.id] ?? {
-    icon: "✨",
-    anim: "cta-icon-pulse",
-  };
-
-  const workshopBgStyle: React.CSSProperties = isWorkshops
-    ? {
-        background:
-          "linear-gradient(135deg, #ffe066 0%, #a8ff78 30%, #6dd5ed 70%, #ff9f43 100%)",
-        backgroundSize: "200% 200%",
-        animation: "gradientFlow 12s ease infinite",
-      }
-    : {};
-
-  const productsBgStyle: React.CSSProperties = isProducts
-    ? {
-        background:
-          "linear-gradient(135deg, #e0c3fc 0%, #c3e7ff 40%, #fff0c7 70%, #ffd1dc 100%)",
-        backgroundSize: "180% 180%",
-        animation: "softPulse 15s ease infinite",
-      }
-    : {};
-
-  const navBtnStyle = {
-    width: "clamp(26px, 3.8vw, 48px)",
-    height: "clamp(26px, 3.8vw, 48px)",
-    background: "#fff",
-    boxShadow: "3px 3px 0 rgba(0,0,0,0.25), 0 0 0 2px rgba(0,0,0,0.08)",
-    flexShrink: 0,
-  };
+  const driftingClouds = [
+    { top: 8, width: 90, duration: 28, delay: 0, opacity: 0.55 },
+    { top: 20, width: 60, duration: 36, delay: 6, opacity: 0.4 },
+    { top: 55, width: 110, duration: 32, delay: 3, opacity: 0.35 },
+    { top: 70, width: 70, duration: 42, delay: 10, opacity: 0.45 },
+    { top: 35, width: 80, duration: 38, delay: 15, opacity: 0.3 },
+    { top: 82, width: 55, duration: 30, delay: 8, opacity: 0.5 },
+    { top: 14, width: 100, duration: 45, delay: 20, opacity: 0.25 },
+    { top: 62, width: 65, duration: 34, delay: 12, opacity: 0.4 },
+  ];
 
   return (
-    <section
-      className="relative w-full select-none px-0 overflow-hidden"
-      style={{ minHeight: 200, height: "clamp(200px, 50vw, 500px)" }}
-    >
+    <section className="h-[85vh] relative bg-blue-300 overflow-hidden">
       <style>{`
-        @keyframes gradientFlow {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
+        @keyframes cloud-drift-lr {
+          0%   { transform: translateX(-160px); }
+          100% { transform: translateX(110vw); }
         }
-        @keyframes softPulse {
-          0%, 100% { background-position: 0% 50%; opacity: 0.95; }
-          50% { background-position: 100% 50%; opacity: 1; }
+        .cloud-drift-lr {
+          position: absolute;
+          pointer-events: none;
+          animation: cloud-drift-lr linear infinite;
+          will-change: transform;
         }
-        @media (max-width: 400px) {
-          .banner-left-col {
-            max-width: 56% !important;
-            padding-left: 10px !important;
-            padding-right: 4px !important;
+
+        @media (max-width: 1024px) and (min-width: 769px) {
+          .banner-right-img { display: none !important; }
+          .banner-center-grid { display: grid !important; gap: 1.25rem !important; padding: 1rem !important; }
+          .banner-center-grid .banner-grid-item { width: 5rem !important; height: 5rem !important; }
+          .banner-left { width: 55% !important; margin-left: 1.5rem !important; }
+          .banner-headline { font-size: 3.5rem !important; }
+        }
+
+        @media (max-width: 1024px) {
+          .cloud-bg-drift {
+            animation: none;
           }
         }
-        @media (max-width: 320px) {
-          .banner-left-col { max-width: 52% !important; }
+
+        @media (max-width: 768px) {
+          .banner-right-img { display: none !important; }
+          .banner-center-grid { display: none !important; }
+          .banner-left { margin-left: 1rem !important; width: 90% !important; }
+          .banner-headline { font-size: 2.8rem !important; }
+          .banner-sub { font-size: 0.75rem !important; }
         }
-        @keyframes iconZap {
-          0%,100% { transform: scale(1) rotate(0deg); opacity: 1; }
-          30%      { transform: scale(1.3) rotate(-15deg); opacity: 0.7; }
-          60%      { transform: scale(1.1) rotate(10deg); opacity: 1; }
+
+        @media (max-width: 480px) {
+          .banner-headline { font-size: 2rem !important; }
+          .banner-left { margin-left: 0.75rem !important; }
         }
-        .cta-icon-zap { animation: iconZap 1.4s ease-in-out infinite; }
-        @keyframes iconTilt {
-          0%,100% { transform: rotate(0deg); }
-          30%      { transform: rotate(-12deg) scale(1.15); }
-          65%      { transform: rotate(8deg) scale(1.1); }
-        }
-        .cta-icon-tilt { animation: iconTilt 2s ease-in-out infinite; }
-        @keyframes iconRocket {
-          0%,100% { transform: translateY(0) rotate(0deg); }
-          40%      { transform: translateY(-7px) rotate(-10deg) scale(1.2); }
-          70%      { transform: translateY(-4px) rotate(-5deg) scale(1.1); }
-        }
-        .cta-icon-rocket { animation: iconRocket 1.8s ease-in-out infinite; }
-        @keyframes iconPulse {
-          0%,100% { transform: scale(1); }
-          50%      { transform: scale(1.25); }
-        }
-        .cta-icon-pulse { animation: iconPulse 1.2s ease-in-out infinite; }
-        @keyframes iconSmash {
-          0%,70%,100% { transform: scale(1) rotate(0deg); }
-          78%          { transform: scale(1.4) rotate(-8deg); }
-          86%          { transform: scale(0.9) rotate(5deg); }
-          93%          { transform: scale(1.15) rotate(-3deg); }
-        }
-        .cta-icon-smash { animation: iconSmash 2s ease-in-out infinite; }
-        @keyframes iconShake {
-          0%,100%  { transform: translateX(0) rotate(0deg); }
-          20%      { transform: translateX(-4px) rotate(-10deg); }
-          40%      { transform: translateX(4px) rotate(10deg); }
-          60%      { transform: translateX(-3px) rotate(-6deg); }
-          80%      { transform: translateX(3px) rotate(6deg); }
-        }
-        .cta-icon-shake { animation: iconShake 1.6s ease-in-out infinite; }
-        @keyframes iconSpin {
-          0%   { transform: rotate(0deg) scale(1); }
-          40%  { transform: rotate(180deg) scale(1.15); }
-          100% { transform: rotate(360deg) scale(1); }
-        }
-        .cta-icon-spin { animation: iconSpin 2.4s linear infinite; }
       `}</style>
 
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          go("prev");
-        }}
-        aria-label="Previous slide"
-        className="absolute left-0.5 xs:left-1 sm:left-2 md:left-3 top-1/2 -translate-y-1/2 z-20 flex items-center justify-center rounded-full hover:scale-110 active:scale-95 transition-all duration-150"
-        style={navBtnStyle}
-      >
-        <FaChevronLeft
-          style={{ fontSize: "clamp(8px, 1.3vw, 15px)", color: "#333" }}
-        />
-      </button>
+      {driftingClouds.map((c, i) => (
+        <svg
+          key={i}
+          className="cloud-drift-lr"
+          style={{
+            top: `${c.top}%`,
+            width: `${c.width}px`,
+            height: `${Math.round(c.width * 0.6)}px`,
+            animationDuration: `${c.duration}s`,
+            animationDelay: `-${c.delay}s`,
+            opacity: c.opacity,
+            zIndex: 0,
+          }}
+          viewBox="0 0 100 60"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M 20 48 Q 4 48 4 35 Q 4 27 14 25 Q 14 14 28 14 Q 36 8 46 11 Q 56 7 66 12 Q 78 10 82 20 Q 94 20 96 30 Q 100 32 100 39 Q 100 48 88 48 Z"
+            fill="white"
+          />
+        </svg>
+      ))}
 
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          go("next");
-        }}
-        aria-label="Next slide"
-        className="absolute right-0.5 xs:right-1 sm:right-2 md:right-3 top-1/2 -translate-y-1/2 z-20 flex items-center justify-center rounded-full hover:scale-110 active:scale-95 transition-all duration-150"
-        style={navBtnStyle}
-      >
-        <FaChevronRight
-          style={{ fontSize: "clamp(8px, 1.3vw, 15px)", color: "#333" }}
-        />
-      </button>
+      <img
+        className="absolute inset-0 h-full w-full pointer-events-none cloud-bg-drift"
+        style={{ zIndex: 1 }}
+        src="/assets/home/newPage/bg/landing-bg.png"
+        alt="hero-bg"
+      />
 
       <div
-        ref={cardRef}
-        className={`mx-7 xs:mx-8 sm:mx-10 md:mx-12 lg:mx-14 rounded-2xl xs:rounded-3xl sm:rounded-[2rem] h-full bg-gradient-to-br ${slide.bg} overflow-hidden relative mt-2 xs:mt-2.5 sm:mt-3 md:mt-4`}
-        style={{
-          boxShadow: "4px 6px 0px rgba(0,0,0,0.22), 0 0 0 2px rgba(0,0,0,0.07)",
-          border: "2px solid rgba(255,255,255,0.6)",
-        }}
+        key={displaySlide}
+        style={{ position: "relative", zIndex: 2 }}
+        className={`flex items-center justify-center gap-5 h-3/4 ${
+          animating
+            ? direction === "next"
+              ? "cloud-exit-left"
+              : "cloud-exit-right"
+            : direction === "next"
+              ? "cloud-enter-right"
+              : "cloud-enter-left"
+        }`}
       >
-        {(slide as any).type === "flip" ? (
-          <OurCoreFlipCard />
-        ) : (
-          <>
-            <div
-              className="absolute inset-0 opacity-[0.07]"
+        <div className="banner-left font-futura flex flex-col items-start justify-start ml-20 w-1/2 h-1/3 mb-10">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-2xl">{slide.emoji}</span>
+            <span
+              className="text-xs font-bold tracking-widest uppercase px-3 py-1 rounded-full"
               style={{
-                backgroundImage: `radial-gradient(circle, ${slide.accent} 1.2px, transparent 0)`,
-                backgroundSize: "24px 24px",
-              }}
-            />
-
-            <div
-              ref={glowRef}
-              className="absolute inset-0 opacity-0 pointer-events-none"
-              style={{
-                background: `radial-gradient(ellipse at 78% 50%, ${slide.accent}28 0%, transparent 65%)`,
-              }}
-            />
-
-            <div
-              ref={emojiRef}
-              className="absolute hidden xs:block pointer-events-none"
-              style={{
-                right: "clamp(90px, 16vw, 230px)",
-                top: "clamp(6px, 3vw, 44px)",
-                fontSize: "clamp(20px, 4vw, 58px)",
-                filter: "drop-shadow(2px 3px 0 rgba(0,0,0,0.18))",
+                backgroundColor: "rgba(0,0,0,0.12)",
+                color: "#1a1a2e",
+                border: "1px solid rgba(0,0,0,0.2)",
               }}
             >
-              {slide.emoji}
-            </div>
+              {slide.tag}
+            </span>
+          </div>
 
-            <div
-              className="banner-left-col relative z-10 flex flex-col justify-center h-full"
-              style={{
-                maxWidth: "62%",
-                paddingLeft: "clamp(10px, 3.5vw, 64px)",
-                paddingRight: "clamp(4px, 1vw, 16px)",
-              }}
-            >
-              <div
-                ref={tagRef}
-                className="mb-1 xs:mb-1.5 sm:mb-2 md:mb-3 inline-flex items-center gap-1.5"
-              >
-                <span
-                  className="font-black tracking-wide rounded-2xl uppercase whitespace-nowrap"
-                  style={{
-                    background: slide.accent,
-                    color: "#fff",
-                    fontSize: "clamp(6px, 1.1vw, 11px)",
-                    letterSpacing: "0.1em",
-                    padding: "clamp(2px,0.45vw,5px) clamp(5px,1.1vw,14px)",
-                    boxShadow: "2px 2px 0 rgba(0,0,0,0.2)",
-                  }}
-                >
-                  {slide.tag}
+          <h1 className="text-xl font-semibold text-gray-800 [text-shadow:0_2px_6px_rgba(0,0,0,0.2)]">
+            Welcome to <span className="text-white">Mentoons</span>
+          </h1>
+
+          <h1 className="banner-headline text-7xl font-semibold leading-tight text-gray-900">
+            {slide.headline.split(" ").map((word, i) =>
+              word === slide.highlightWord ? (
+                <span key={i} className="text-[#e85d04]">
+                  {word}{" "}
                 </span>
-              </div>
-
-              <h2
-                ref={headlineRef}
-                className="font-black leading-[1.05] mb-1 xs:mb-1.5 sm:mb-2 md:mb-3 lg:mb-4"
-                style={{
-                  fontFamily: "'Georgia', 'Times New Roman', serif",
-                  fontSize: "clamp(15px, 4.2vw, 60px)",
-                  color: "#fff",
-                  textShadow:
-                    "0 2px 8px rgba(0,0,0,0.55), 2px 2px 0 rgba(0,0,0,0.3)",
-                }}
-              >
-                {headlineParts[0]}
-                <span
-                  style={{
-                    color: slide.accent,
-                    textShadow:
-                      "0 2px 8px rgba(0,0,0,0.4), 2px 2px 0 rgba(0,0,0,0.2)",
-                    WebkitTextStroke: "0.5px rgba(255,255,255,0.2)",
-                  }}
-                >
-                  {slide.highlightWord}
-                </span>
-                {headlineParts[1]}
-              </h2>
-
-              <p
-                ref={subRef}
-                className="mb-2 sm:mb-3 md:mb-4 lg:mb-5 leading-relaxed hidden sm:block"
-                style={{
-                  fontSize: "clamp(10px, 1.25vw, 14px)",
-                  maxWidth: "30ch",
-                  color: "rgba(255,255,255,0.92)",
-                  textShadow: "0 1px 6px rgba(0,0,0,0.5)",
-                }}
-              >
-                {slide.sub}
-              </p>
-
-              <div
-                ref={badgesRef}
-                className="flex gap-1 mb-1.5 xs:mb-2 sm:mb-3 md:mb-4 flex-wrap"
-              >
-                {slide.badges.map((b) => (
-                  <span
-                    key={b}
-                    className="font-bold rounded-xl whitespace-nowrap"
-                    style={{
-                      color: "#111",
-                      background: "rgba(255,255,255,0.85)",
-                      fontSize: "clamp(6px, 0.95vw, 11px)",
-                      padding: "clamp(1px,0.3vw,4px) clamp(5px,0.9vw,12px)",
-                      boxShadow: "2px 2px 0 rgba(0,0,0,0.15)",
-                      border: "1.5px solid rgba(0,0,0,0.12)",
-                    }}
-                  >
-                    {b}
-                  </span>
-                ))}
-              </div>
-
-              <NavLink
-                to={slide.link}
-                ref={ctaRef}
-                className="inline-flex items-center gap-1.5 xs:gap-2 font-black rounded-full w-fit hover:brightness-110 active:scale-95 transition-all duration-150"
-                style={{
-                  background: slide.accent,
-                  color: "#111",
-                  boxShadow: "3px 4px 0 rgba(0,0,0,0.25)",
-                  fontSize: "clamp(7px, 1.2vw, 13px)",
-                  padding: "clamp(4px,0.9vw,11px) clamp(8px,1.8vw,24px)",
-                }}
-              >
-                <span
-                  className={`inline-flex items-center justify-center ${ctaIconAnim}`}
-                  style={{ fontSize: "clamp(10px,1.6vw,18px)" }}
-                >
-                  {ctaIcon}
-                </span>
-                {slide.cta}
-              </NavLink>
-            </div>
-
-            {slide.items && slide.items.length > 0 && (
-              <ItemsPanel
-                items={slide.items}
-                accent={slide.accent}
-                isWorkshops={isWorkshops}
-                isProducts={isProducts}
-                workshopBgStyle={workshopBgStyle}
-                productsBgStyle={productsBgStyle}
-                imgFitClass={imgFitClass}
-              />
+              ) : (
+                <span key={i}>{word} </span>
+              ),
             )}
-          </>
-        )}
+          </h1>
 
-        <div className="absolute bottom-1.5 xs:bottom-2 sm:bottom-3 md:bottom-4 left-1/2 -translate-x-1/2 flex gap-1 xs:gap-1.5 sm:gap-2 z-20">
-          {SLIDES.map((_, i) => (
-            <button
-              key={i}
-              onClick={(e) => {
-                e.stopPropagation();
-                if (!isAnimating && i !== current)
-                  go(i > current ? "next" : "prev");
-              }}
-              aria-label={`Go to slide ${i + 1}`}
-              className="rounded-full transition-all duration-300"
-              style={{
-                width:
-                  i === current
-                    ? "clamp(14px, 2.3vw, 26px)"
-                    : "clamp(5px, 0.85vw, 8px)",
-                height: "clamp(5px, 0.85vw, 8px)",
-                background: i === current ? "#fff" : "rgba(255,255,255,0.45)",
-                boxShadow: i === current ? "1px 2px 0 rgba(0,0,0,0.2)" : "none",
-                border: i === current ? `1.5px solid ${slide.accent}` : "none",
-              }}
-            />
+          <p className="banner-sub mt-2 font-medium tracking-wider text-gray-700 max-w-sm text-sm">
+            {slide.sub}
+          </p>
+
+          <div className="flex flex-wrap gap-2 mt-2">
+            {slide.badges?.map((badge, i) => (
+              <span
+                key={i}
+                className="text-xs px-2 py-0.5 rounded-full font-semibold text-white"
+                style={{ backgroundColor: "rgba(0,0,0,0.35)" }}
+              >
+                {badge}
+              </span>
+            ))}
+          </div>
+
+          <a href={slide.link}>
+            <button className="relative bg-transparent border-none cursor-pointer p-0 outline-none transition-transform duration-150 hover:scale-105 active:scale-95">
+              <svg
+                width="190"
+                height="100"
+                viewBox="0 0 180 100"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <defs>
+                  <linearGradient id="cloudGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#ffffff" />
+                    <stop offset="100%" stopColor="#dbeeff" />
+                  </linearGradient>
+                  <clipPath id="cloudClip">
+                    <path d="M 48 72 Q 22 72 22 52 Q 22 42 38 40 Q 38 28 58 28 Q 68 20 82 23 Q 94 18 108 24 Q 124 22 130 34 Q 148 34 152 48 Q 162 50 162 60 Q 162 72 144 72 Z" />
+                  </clipPath>
+                </defs>
+                <rect
+                  x="0"
+                  y="0"
+                  width="180"
+                  height="100"
+                  fill="url(#cloudGrad)"
+                  clipPath="url(#cloudClip)"
+                />
+                <path
+                  d="M 48 72 Q 22 72 22 52 Q 22 42 38 40 Q 38 28 58 28 Q 68 20 82 23 Q 94 18 108 24 Q 124 22 130 34 Q 148 34 152 48 Q 162 50 162 60 Q 162 72 144 72 Z"
+                  fill="none"
+                  stroke="#bdd9f0"
+                  strokeWidth="1.5"
+                />
+                <text
+                  x="92"
+                  y="54"
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fill="#3a7ab8"
+                  fontSize="15"
+                  fontWeight="500"
+                  fontFamily="system-ui, sans-serif"
+                >
+                  {slide.cta}
+                </text>
+              </svg>
+            </button>
+          </a>
+        </div>
+
+        <div className="banner-center-grid grid grid-cols-2 place-items-center gap-10 p-6">
+          {slide?.items?.slice(0, 4).map((item, index) => (
+            <a
+              key={index}
+              href={item.link}
+              className="group block transition-transform duration-200 hover:scale-105"
+            >
+              {"image" in item && item.image ? (
+                <div className="banner-grid-item w-28 h-28 rounded-2xl overflow-hidden shadow-lg border-2 border-white/30 bg-white/10 backdrop-blur-sm">
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                  />
+                  <span className="sr-only">{item.name}</span>
+                </div>
+              ) : (
+                <div
+                  className="banner-grid-item w-28 h-28 rounded-2xl flex items-center justify-center shadow-lg border border-white/30 backdrop-blur-sm p-3 text-center"
+                  style={{
+                    backgroundColor:
+                      "color" in item ? `${item.color}` : `${slide.accent}22`,
+                    borderColor: "color" in item ? item.color : slide.accent,
+                  }}
+                >
+                  <span
+                    className="text-xs font-semibold leading-tight font-fredoka"
+                    style={{ color: "#000000" }}
+                  >
+                    {item.name}
+                  </span>
+                </div>
+              )}
+            </a>
           ))}
         </div>
 
-        <div
-          className="absolute bottom-0 left-0 right-0 h-1 rounded-b-full"
-          style={{ background: slide.accent, opacity: 0.5 }}
-        />
+        <div className="banner-right-img w-1/2 flex items-center justify-center">
+          <img src={slide.img} className="w-full" alt="right-content" />
+        </div>
+      </div>
+
+      <div
+        className="flex items-start justify-center gap-4 z-30"
+        style={{ position: "relative", zIndex: 3 }}
+      >
+        <button
+          onClick={handlePrev}
+          className="w-12 h-12 p-1 bg-gray-600/75 rounded-full overflow-hidden"
+        >
+          <div className="border-2 border-gray-300/75 rounded-full w-full h-full flex items-center justify-center">
+            <FaChevronLeft className="text-white" />
+          </div>
+        </button>
+        <button
+          onClick={handleNext}
+          className="w-12 h-12 p-1 bg-gray-600/75 rounded-full overflow-hidden"
+        >
+          <div className="border-2 border-gray-300/75 rounded-full w-full h-full flex items-center justify-center">
+            <FaChevronRight className="text-white" />
+          </div>
+        </button>
       </div>
     </section>
   );

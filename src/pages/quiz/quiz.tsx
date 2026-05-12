@@ -19,7 +19,6 @@ const QuizPage: React.FC = () => {
   const navigate = useNavigate();
   const { userId, getToken } = useAuth();
   const { user } = useUser();
-  console.log(hasQuizParam);
 
   const [quiz, setQuiz] = useState<QuizData | null>(null);
   const [loading, setLoading] = useState(!hasQuizParam);
@@ -31,7 +30,9 @@ const QuizPage: React.FC = () => {
   const [hasPaid, setHasPaid] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [isPaying, setIsPaying] = useState(false);
-  
+
+  console.log("reached quiz");
+
   useEffect(() => {
     if (hasQuizParam) {
       setLoading(false);
@@ -47,7 +48,7 @@ const QuizPage: React.FC = () => {
           `${import.meta.env.VITE_PROD_URL}/quiz/${categoryId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
-          }
+          },
         );
         setQuiz(response.data.data);
         setHasPaid(false);
@@ -78,7 +79,7 @@ const QuizPage: React.FC = () => {
     const key = STORAGE_KEY(categoryId);
     localStorage.setItem(
       key,
-      JSON.stringify({ answers, currentQuestion, hasPaid })
+      JSON.stringify({ answers, currentQuestion, hasPaid }),
     );
   }, [answers, currentQuestion, hasPaid, categoryId, hasQuizParam]);
 
@@ -89,7 +90,7 @@ const QuizPage: React.FC = () => {
     setProgress(
       ((currentQuestion + 1) /
         (hasPaid ? TOTAL_QUESTIONS : FREE_QUESTION_LIMIT)) *
-        100
+        100,
     );
   }, [currentQuestion, quiz, hasPaid, hasQuizParam]);
 
@@ -153,17 +154,13 @@ const QuizPage: React.FC = () => {
     }
   };
 
-
-
-
-
   const calculateResult = () => {
     const totalScore = Object.values(answers).reduce(
       (sum, score) => sum + score,
-      0
+      0,
     );
     const result = quiz?.results?.find(
-      (r) => totalScore >= r.minScore && totalScore <= r.maxScore
+      (r) => totalScore >= r.minScore && totalScore <= r.maxScore,
     );
     return result?.message || "No result found";
   };
@@ -218,7 +215,7 @@ const QuizPage: React.FC = () => {
         rewardPurchaseProduct,
         { questionsByDifficulty: { dynamic: quiz.questions } },
         "dynamic",
-        orderType
+        orderType,
       );
       await proceedToPay({
         preventDefault: () => {},
@@ -265,8 +262,6 @@ const QuizPage: React.FC = () => {
         />
       )}
 
-     
-
       {showPaymentModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-8 max-w-md w-full text-center shadow-lg">
@@ -301,8 +296,7 @@ const QuizPage: React.FC = () => {
               <>
                 <p className="text-gray-600 mb-6">
                   You've answered {FREE_QUESTION_LIMIT} free questions. Pay ₹9
-                  to unlock all {quiz?.questions.length} questions and
-                  continue!
+                  to unlock all {quiz?.questions.length} questions and continue!
                 </p>
                 <div className="flex justify-center gap-4">
                   <button

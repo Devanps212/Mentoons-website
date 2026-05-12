@@ -42,6 +42,10 @@ const ProductsPage = () => {
   const cardType = searchParams.get("cardType") || undefined;
   const urlSearch = searchParams.get("search") || "";
 
+  useEffect(() => {
+    console.log(productType, cardType, urlSearch);
+  }, []);
+
   const [searchTerm, setSearchTerm] = useState(urlSearch);
   const [inputValue, setInputValue] = useState(urlSearch);
   // const [isFilterOpen, setIsFilterOpen] = useState(false);

@@ -573,9 +573,9 @@ const Header = () => {
         <Sidebar
           token={userId ?? null}
           isOpen={sidebarOpen}
-          dropdown={dropdown}
-          handleHover={handleHover}
-          handleMouseLeave={handleMouseLeave}
+          // dropdown={dropdown}
+          // handleHover={handleHover}
+          // handleMouseLeave={handleMouseLeave}
           setIsOpen={setSideBarOpen}
           handlePlans={handleBrowsePlansClick}
         />

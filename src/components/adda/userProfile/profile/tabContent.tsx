@@ -25,10 +25,49 @@ const ProfileTabContent = ({
 }: ProfileTabContentProps) => {
   const navigate = useNavigate();
 
+  const staticBadges = [
+    {
+      name: "Rookie",
+      description: "Created your first post in the community",
+      icon: "https://img.icons8.com/emoji/100/000000/fire.png",
+      earnedDate: "2025-12-15",
+    },
+    {
+      name: "Rising Star",
+      description: "Received 50+ likes on your posts",
+      icon: "https://img.icons8.com/color/96/star.png",
+      earnedDate: "2026-01-20",
+    },
+    {
+      name: "Helper",
+      description: "Helped 10+ users with useful comments",
+      icon: "https://img.icons8.com/color/96/handshake.png",
+      earnedDate: "2026-02-05",
+    },
+    {
+      name: "Content King",
+      description: "Posted 25+ times",
+      icon: "https://img.icons8.com/color/96/crown.png",
+      earnedDate: "2026-03-10",
+    },
+    {
+      name: "Engager",
+      description: "Commented 100+ times",
+      icon: "https://img.icons8.com/color/96/speech-bubble.png",
+      earnedDate: "2026-03-25",
+    },
+    {
+      name: "Community Favorite",
+      description: "Your post was saved by 50+ users",
+      icon: "https://img.icons8.com/user.jpg",
+      earnedDate: "2026-04-01",
+    },
+  ];
+
   switch (activeTab) {
     case "Posts":
       return (
-        <div className="space-y-4 sm:space-y-6 mt-6 sm:mt-8 overflow-y-auto ">
+        <div className="space-y-4 sm:space-y-6 mt-6 sm:mt-8 overflow-y-auto">
           {userPosts.length === 0 ? (
             <div className="text-center py-10 sm:py-12 lg:py-16">
               <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
@@ -40,21 +79,18 @@ const ProfileTabContent = ({
               <p className="text-gray-500 text-sm sm:text-base mb-4 sm:mb-6">
                 Share your first post with the community!
               </p>
-              {/* <button className="bg-gradient-to-r from-orange-500 to-orange-400 text-white px-6 sm:px-8 py-2 sm:py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 text-sm sm:text-base">
-                Create Post
-              </button> */}
             </div>
           ) : (
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 overflow-y-auto ">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 overflow-y-auto">
               {userPosts.map((post) => (
                 <div
+                  key={post._id}
                   onClick={() => navigate(`/adda/post/${post._id}`)}
-                  className="flex flex-col items-center justify-start w-full gap-5 p-2 border border-orange-200 rounded-xl min-h-fit"
+                  className="flex flex-col items-center justify-start w-full gap-5 p-2 border border-orange-200 rounded-xl min-h-fit hover:shadow-md transition-shadow cursor-pointer"
                 >
                   <ProfilePostCard
                     setUserPosts={setUserPosts}
                     isUser={true}
-                    key={post._id}
                     post={post as unknown as PostData}
                   />
                 </div>
@@ -63,12 +99,14 @@ const ProfileTabContent = ({
           )}
         </div>
       );
+
     case "Rewards":
       return (
         <div className="space-y-3 sm:space-y-4 mt-6 sm:mt-8">
           <RewardsSection />
         </div>
       );
+
     case "Saved":
       return (
         <div className="space-y-3 sm:space-y-4 mt-6 sm:mt-8">
@@ -84,8 +122,8 @@ const ProfileTabContent = ({
                 Save interesting content to view it here later!
               </p>
               <NavLink
-                to={"/adda"}
-                className="bg-gradient-to-r from-orange-500 to-orange-400 text-white px-6 sm:px-8 py-2 sm:py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 text-sm sm:text-base"
+                to="/adda"
+                className="bg-gradient-to-r from-orange-500 to-orange-400 text-white px-6 sm:px-8 py-2 sm:py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 text-sm sm:text-base inline-block"
               >
                 Explore Content
               </NavLink>
@@ -118,6 +156,7 @@ const ProfileTabContent = ({
           )}
         </div>
       );
+
     case "Details":
       return (
         <div className="space-y-4 sm:space-y-6 mt-6 sm:mt-8">
@@ -213,12 +252,12 @@ const ProfileTabContent = ({
                   </h3>
                   <p className="text-gray-900 text-sm sm:text-base">
                     {new Date(userDetails.dateOfBirth).toLocaleDateString(
-                      "en-En",
+                      "en-US",
                       {
                         day: "2-digit",
                         month: "long",
                         year: "numeric",
-                      }
+                      },
                     )}
                   </p>
                 </div>
@@ -266,8 +305,9 @@ const ProfileTabContent = ({
                 </div>
               )}
             </div>
+
             {Object.values(userDetails).every(
-              (value) => !value || (Array.isArray(value) && value.length === 0)
+              (value) => !value || (Array.isArray(value) && value.length === 0),
             ) && (
               <div className="text-center py-10 sm:py-12 lg:py-16">
                 <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
@@ -290,6 +330,61 @@ const ProfileTabContent = ({
           </div>
         </div>
       );
+
+    case "Badges":
+      return (
+        <div className="space-y-6 sm:space-y-8 mt-6 sm:mt-8">
+          <div>
+            <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-2">
+              Achievements & Badges
+            </h2>
+            <p className="text-gray-500 text-sm sm:text-base">
+              Unlock badges by being active in the community
+            </p>
+          </div>
+
+          {userDetails.badges && userDetails.badges.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+              {userDetails.badges.map((userBadge, index) => {
+                const badge = userBadge.badge;
+
+                return (
+                  <div
+                    key={index}
+                    className="group bg-white border border-gray-100 rounded-2xl p-5 hover:border-orange-200 hover:shadow-lg transition-all duration-300 flex flex-col items-center text-center"
+                  >
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center mb-4 transition-transform group-hover:scale-110 duration-300">
+                      <img
+                        src={badge.image}
+                        alt={badge.name}
+                        className="w-20 h-20 sm:w-24 sm:h-24 object-contain drop-shadow-sm"
+                      />
+                    </div>
+
+                    <h3 className="font-semibold text-gray-900 text-base sm:text-lg mb-1">
+                      {badge.name}
+                    </h3>
+
+                    <p className="text-gray-500 text-xs sm:text-sm line-clamp-2 min-h-[40px]">
+                      {badge.description}
+                    </p>
+
+                    <p className="mt-4 text-[10px] text-gray-400 font-medium">
+                      Earned{" "}
+                      {format(new Date(userBadge.earnedAt), "MMMM d, yyyy")}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-10">
+              <p className="text-gray-500">No badges earned yet</p>
+            </div>
+          )}
+        </div>
+      );
+
     default:
       return null;
   }

@@ -11,6 +11,7 @@ export interface Slide {
   id: number;
   tag: string;
   headline: string;
+  img: string;
   sub: string;
   cta: string;
   accent: string;
