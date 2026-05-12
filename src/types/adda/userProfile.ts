@@ -132,6 +132,7 @@ export interface Badge {
   animation?: string;
   image: string;
   xp: number;
+  earnedAt: string;
 }
 
 export interface UserBadge {

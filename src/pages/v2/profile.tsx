@@ -1,12 +1,16 @@
 import LeftSection from "@/components/adda/userProfile/profile/leftSection";
 import CompleteProfileModal from "@/components/adda/userProfile/CompleteProfileModal";
 import UserListModal from "@/components/common/modal/userList";
-import { Ellipsis, X, Flame } from "lucide-react";
+import { Ellipsis, X } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import Confetti from "react-confetti";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import axios from "axios";
-import { ProfileUserDetails, ProfilePost } from "@/types/adda/userProfile";
+import {
+  ProfileUserDetails,
+  ProfilePost,
+  Badge,
+} from "@/types/adda/userProfile";
 import ProfileTabContent from "@/components/adda/userProfile/profile/tabContent";
 import LoadingSpinner from "@/components/adda/userProfile/loader/spinner";
 import ProfileCompletionWidget from "@/components/adda/cards/profileCompletion";
@@ -60,6 +64,7 @@ const Profile = () => {
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
   const [coverImageLoaded, setCoverImageLoaded] = useState(false);
   const [profileImageLoaded, setProfileImageLoaded] = useState(false);
+  const [badges, setBadges] = useState<Badge[]>([]);
 
   const [userId, setUserId] = useState<string>("");
 
@@ -82,9 +87,9 @@ const Profile = () => {
   });
 
   // Level Tracker State
-  const [currentLevel, setCurrentLevel] = useState(7);
-  const [currentXP, setCurrentXP] = useState(1850);
-  const [xpToNextLevel, setXpToNextLevel] = useState(2400);
+  // const [currentLevel, setCurrentLevel] = useState(7);
+  // const [currentXP, setCurrentXP] = useState(1850);
+  // const [xpToNextLevel, setXpToNextLevel] = useState(2400);
 
   const profileFields = [
     { field: "name", label: "Name", required: true },
@@ -164,7 +169,7 @@ const Profile = () => {
   const isProfileComplete = profileCompletionPercentage === 100;
   const incompleteFields = getIncompleteFields();
 
-  const progressPercentage = Math.round((currentXP / xpToNextLevel) * 100);
+  // const progressPercentage = Math.round((currentXP / xpToNextLevel) * 100);
 
   const fetchUserData = async () => {
     setIsFetchingUserData(true);
@@ -175,7 +180,7 @@ const Profile = () => {
     }
 
     try {
-      const [userResponse, postsResponse, savedPostsResponse] =
+      const [userResponse, postsResponse, savedPostsResponse, badgeResponse] =
         await Promise.all([
           axios.get(`${import.meta.env.VITE_PROD_URL}/user/user`, {
             headers: { Authorization: `Bearer ${token}` },
@@ -189,11 +194,16 @@ const Profile = () => {
           axios.get(`${import.meta.env.VITE_PROD_URL}/feeds/saved`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
+          axios.get(`${import.meta.env.VITE_PROD_URL}/badge`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
         ]);
 
       const userData = userResponse.data.data;
       setUserDetails(userData);
       setUserId(userData._id);
+      console.log(badgeResponse.data.badges);
+      setBadges(badgeResponse.data.badges || []);
 
       setTotalFollowers(
         userData.followers?.map((ele: FollowType) => ele._id) || [],
@@ -699,7 +709,7 @@ const Profile = () => {
             </div>
           )}
 
-          {/* Improved Level Tracker - Above Tabs */}
+          {/* Improved Level Tracker - Above Tabs
           <div className="bg-white rounded-3xl shadow-sm border border-gray-100 mb-6 overflow-hidden">
             <div className="px-6 pt-6 pb-5">
               <div className="flex items-center justify-between mb-4">
@@ -728,10 +738,10 @@ const Profile = () => {
                     {xpToNextLevel - currentXP} XP to Level {currentLevel + 1}
                   </p>
                 </div>
-              </div>
+              </div> */}
 
-              {/* Progress Bar */}
-              <div className="relative h-3 bg-gray-100 rounded-full overflow-hidden shadow-inner">
+          {/* Progress Bar */}
+          {/* <div className="relative h-3 bg-gray-100 rounded-full overflow-hidden shadow-inner">
                 <div
                   className="absolute h-full bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-400 rounded-full transition-all duration-700"
                   style={{ width: `${progressPercentage}%` }}
@@ -745,7 +755,7 @@ const Profile = () => {
                 />
               </div>
             </div>
-          </div>
+          </div> */}
 
           <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8">
             <div className="w-full lg:w-1/3">
@@ -810,6 +820,7 @@ const Profile = () => {
 
               <div className="p-4 sm:p-6 lg:p-8">
                 <ProfileTabContent
+                  badges={badges}
                   activeTab={activeTab}
                   userPosts={userPosts}
                   userSavedPosts={userSavedPosts}

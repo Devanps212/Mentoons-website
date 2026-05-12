@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { ProfilePost } from "@/types/adda/userProfile";
+import { Badge, ProfilePost } from "@/types/adda/userProfile";
 import RewardsSection from "@/components/adda/userProfile/rewardsSection";
 import { PostData } from "@/components/adda/home/addPosts/PostCard";
 import { ProfileUserDetails } from "@/types/adda/userProfile";
@@ -13,6 +13,7 @@ interface ProfileTabContentProps {
   userDetails: ProfileUserDetails;
   setUserPosts: React.Dispatch<React.SetStateAction<ProfilePost[]>>;
   setShowCompletionForm: React.Dispatch<React.SetStateAction<boolean>>;
+  badges: Badge[] | [];
 }
 
 const ProfileTabContent = ({
@@ -22,47 +23,9 @@ const ProfileTabContent = ({
   userDetails,
   setUserPosts,
   setShowCompletionForm,
+  badges,
 }: ProfileTabContentProps) => {
   const navigate = useNavigate();
-
-  const staticBadges = [
-    {
-      name: "Rookie",
-      description: "Created your first post in the community",
-      icon: "https://img.icons8.com/emoji/100/000000/fire.png",
-      earnedDate: "2025-12-15",
-    },
-    {
-      name: "Rising Star",
-      description: "Received 50+ likes on your posts",
-      icon: "https://img.icons8.com/color/96/star.png",
-      earnedDate: "2026-01-20",
-    },
-    {
-      name: "Helper",
-      description: "Helped 10+ users with useful comments",
-      icon: "https://img.icons8.com/color/96/handshake.png",
-      earnedDate: "2026-02-05",
-    },
-    {
-      name: "Content King",
-      description: "Posted 25+ times",
-      icon: "https://img.icons8.com/color/96/crown.png",
-      earnedDate: "2026-03-10",
-    },
-    {
-      name: "Engager",
-      description: "Commented 100+ times",
-      icon: "https://img.icons8.com/color/96/speech-bubble.png",
-      earnedDate: "2026-03-25",
-    },
-    {
-      name: "Community Favorite",
-      description: "Your post was saved by 50+ users",
-      icon: "https://img.icons8.com/user.jpg",
-      earnedDate: "2026-04-01",
-    },
-  ];
 
   switch (activeTab) {
     case "Posts":
@@ -343,39 +306,35 @@ const ProfileTabContent = ({
             </p>
           </div>
 
-          {userDetails.badges && userDetails.badges.length > 0 ? (
+          {badges && badges.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-              {userDetails.badges.map((userBadge, index) => {
-                const badge = userBadge.badge;
-
-                return (
-                  <div
-                    key={index}
-                    className="group bg-white border border-gray-100 rounded-2xl p-5 hover:border-orange-200 hover:shadow-lg transition-all duration-300 flex flex-col items-center text-center"
-                  >
-                    <div className="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center mb-4 transition-transform group-hover:scale-110 duration-300">
-                      <img
-                        src={badge.image}
-                        alt={badge.name}
-                        className="w-20 h-20 sm:w-24 sm:h-24 object-contain drop-shadow-sm"
-                      />
-                    </div>
-
-                    <h3 className="font-semibold text-gray-900 text-base sm:text-lg mb-1">
-                      {badge.name}
-                    </h3>
-
-                    <p className="text-gray-500 text-xs sm:text-sm line-clamp-2 min-h-[40px]">
-                      {badge.description}
-                    </p>
-
-                    <p className="mt-4 text-[10px] text-gray-400 font-medium">
-                      Earned{" "}
-                      {format(new Date(userBadge.earnedAt), "MMMM d, yyyy")}
-                    </p>
+              {badges.map((userBadge, index) => (
+                <div
+                  key={index}
+                  className="group bg-white border border-gray-100 rounded-2xl p-5 hover:border-orange-200 hover:shadow-lg transition-all duration-300 flex flex-col items-center text-center"
+                >
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center mb-4 transition-transform group-hover:scale-110 duration-300">
+                    <img
+                      src={userBadge.image}
+                      alt={userBadge.name}
+                      className="w-20 h-20 sm:w-24 sm:h-24 object-contain drop-shadow-sm"
+                    />
                   </div>
-                );
-              })}
+
+                  <h3 className="font-semibold text-gray-900 text-base sm:text-lg mb-1">
+                    {userBadge.name}
+                  </h3>
+
+                  <p className="text-gray-500 text-xs sm:text-sm line-clamp-2 min-h-[40px]">
+                    {userBadge.description}
+                  </p>
+
+                  <p className="mt-4 text-[10px] text-gray-400 font-medium">
+                    Earned{" "}
+                    {format(new Date(userBadge.earnedAt), "MMMM d, yyyy")}
+                  </p>
+                </div>
+              ))}
             </div>
           ) : (
             <div className="text-center py-10">
