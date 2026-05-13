@@ -58,11 +58,11 @@ import AffiliatePage from "./pages/v2/joinus/affiliate/affiliate.tsx";
 import Feedback from "./pages/v2/feedback/feedback.tsx";
 import Collaborate from "./pages/v2/joinus/collaborate/collaborate.tsx";
 import BecomeMentor from "./pages/v2/joinus/becomeMentor.tsx";
-import NewLandingPage from "./pages/v2/newLandingPage.tsx";
 import MessageFromFounder from "./pages/v2/MessageFromFounder.tsx";
 // import NewHome from "./pages/v2/home/home.tsx";
 // import WorkshopV2 from "./pages/v2/workshop/workshopV2.tsx";
 
+const NewLandingPage = lazy(() => import("./pages/v2/newLandingPage"));
 const Cart = lazy(() => import("./pages/Cart"));
 const ComicsPageV2 = lazy(() => import("./pages/ComicsPageV2"));
 const Podcastv2 = lazy(() => import("./pages/Podcastv2"));

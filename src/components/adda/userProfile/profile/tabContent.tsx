@@ -328,11 +328,12 @@ const ProfileTabContent = ({
                   <p className="text-gray-500 text-xs sm:text-sm line-clamp-2 min-h-[40px]">
                     {userBadge.description}
                   </p>
-
-                  <p className="mt-4 text-[10px] text-gray-400 font-medium">
-                    Earned{" "}
-                    {format(new Date(userBadge.earnedAt), "MMMM d, yyyy")}
-                  </p>
+                  {userBadge.earnedAt && (
+                    <p className="mt-4 text-[10px] text-gray-400 font-medium">
+                      Earned{" "}
+                      {format(new Date(userBadge.earnedAt), "MMMM d, yyyy")}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>
