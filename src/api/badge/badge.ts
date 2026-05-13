@@ -4,7 +4,7 @@ import { Badge } from "@/types/adda/userProfile";
 
 export const fetchBadges = async ({ token }: { token: string }) => {
   try {
-    const response = await axios.get(`${BASE_URL}/badge`, {
+    const response = await axios.get(`${BASE_URL}/badge/all`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
