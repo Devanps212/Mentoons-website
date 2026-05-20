@@ -11,6 +11,7 @@ import {
   deleteNotification,
   fetchNotifications,
 } from "@/redux/adda/notificationSlice"; // Import notification actions
+import axios from "axios";
 
 interface FriendRequestsState {
   requests: RequestSender[] | null;
@@ -38,6 +39,8 @@ const initialState: FriendRequestsState = {
   success: false,
 };
 
+const BASE_URL = import.meta.env.VITE_PROD_URL;
+
 export const fetchFriendRequests = createAsyncThunk<
   { pendingReceived: RequestSender[]; totalPages: number },
   { page: number; limit: number; token: string },
@@ -46,13 +49,16 @@ export const fetchFriendRequests = createAsyncThunk<
   "friendRequests/fetchFriendRequests",
   async ({ page, limit, token }, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.get(
-        `/adda/getMyFriendRequests?page=${page}&limit=${limit}`,
+      const response = await axios.get(
+        `${BASE_URL}/adda/getMyFriendRequests?page=${page}&limit=${limit}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         },
       );
+
+      console.log(response.data);
       const { pendingReceived, totalPages } = response.data.data;
+      console.log("pending recieved :", pendingReceived);
       const transformedRequests = pendingReceived.map((data: any) => ({
         requestId: data._id,
         senderDetails: {
@@ -79,9 +85,10 @@ export const fetchFollowBackUsers = createAsyncThunk<
   { rejectValue: AccessCheckResponse }
 >("friendRequests/fetchFollowBackUsers", async (token, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.get("/adda/getFollowBackUsers", {
+    const response = await axios.get(`${BASE_URL}/adda/getFollowBackUsers`, {
       headers: { Authorization: `Bearer ${token}` },
     });
+    console.log("followback usrData :", response);
     if (response.data.success && response.data.data) {
       return response.data.data.map((user: any) => ({
         _id: user._id,
@@ -107,8 +114,8 @@ export const acceptFriendRequest = createAsyncThunk<
   "friendRequests/acceptFriendRequest",
   async ({ requestId, token }, { rejectWithValue, dispatch }) => {
     try {
-      const response = await axiosInstance.patch(
-        `/adda/acceptRequest/${requestId}`,
+      const response = await axios.patch(
+        `${BASE_URL}/adda/acceptRequest/${requestId}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } },
       );
@@ -150,8 +157,8 @@ export const declineFriendRequest = createAsyncThunk<
   "friendRequests/declineFriendRequest",
   async ({ requestId, token }, { rejectWithValue, dispatch }) => {
     try {
-      const response = await axiosInstance.patch(
-        `/adda/rejectRequest/${requestId}`,
+      const response = await axios.patch(
+        `${BASE_URL}/adda/rejectRequest/${requestId}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } },
       );
@@ -186,8 +193,8 @@ export const sendFollowBackRequest = createAsyncThunk<
   "friendRequests/sendFollowBackRequest",
   async ({ userId, token }, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post(
-        `/adda/request/${userId}`,
+      const response = await axios.post(
+        `${BASE_URL}/adda/request/${userId}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } },
       );
@@ -208,8 +215,8 @@ export const unfollowUserThunk = createAsyncThunk<
   { rejectValue: AccessCheckResponse }
 >("friendRequests/unfollow", async ({ userId, token }, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.post(
-      `/adda/unfriend/${userId}`,
+    const response = await axios.post(
+      `${BASE_URL}/adda/unfriend/${userId}`,
       {},
       { headers: { Authorization: `Bearer ${token}` } },
     );
@@ -235,8 +242,8 @@ export const cancelFriendRequestThunk = createAsyncThunk<
   "friendRequests/cancelRequest",
   async ({ userId, token }, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post(
-        `/adda/cancelRequest/${userId}`,
+      const response = await axios.post(
+        `${BASE_URL}/adda/cancelRequest/${userId}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } },
       );
@@ -263,13 +270,15 @@ export const declineFollowBackRequest = createAsyncThunk<
   "friendRequests/declineFollowBackRequest",
   async ({ userId, token }, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post(
-        "/adda/decline-follow-back",
+      console.log("token :", token);
+      const response = await axios.post(
+        `${BASE_URL}/adda/declineFollowBack`,
         { targetUserId: userId },
         { headers: { Authorization: `Bearer ${token}` } },
       );
       return { userId, success: response.data.success };
     } catch (error: any) {
+      console.log(error);
       return rejectWithValue(
         error.response?.data?.error || {
           message: "Failed to decline follow back request",
@@ -332,6 +341,7 @@ const friendRequestSlice = createSlice({
       })
       .addCase(fetchFollowBackUsers.pending, (state) => {
         state.followBackLoading = true;
+        state.followBackUsers = null;
         state.error = null;
       })
       .addCase(fetchFollowBackUsers.fulfilled, (state, action) => {
