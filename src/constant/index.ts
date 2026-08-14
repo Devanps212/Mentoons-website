@@ -1259,7 +1259,7 @@ export const COMMON_NAV: NavLink[] = [
       },
       {
         id: "WK_04",
-        label: "Music Therapy",
+        label: "Swar",
         url: "/workshop",
       },
     ],
@@ -2209,12 +2209,16 @@ export const PRODUCT_TYPE = [
     value: ProductType.PODCAST,
   },
   {
-    id: "PT_05",
+    id: "PT_06",
     label: "Assessments",
     value: ProductType.ASSESSMENT,
   },
+  {
+    id: "PT_07",
+    label: "Toonland",
+    value: ProductType.TOONLAND,
+  },
 ];
-
 export const MYTHOS_FAQ = [
   {
     id: "MY_01",

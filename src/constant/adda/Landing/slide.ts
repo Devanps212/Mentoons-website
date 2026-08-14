@@ -17,11 +17,10 @@ export const SLIDES: Slide[] = [
     link: "/membership",
     items: [
       {
-        name: "Platinum Membership",
+        name: "Explore Membership",
         link: "/membership",
         color: "#a8ff78",
       },
-      { name: "Prime Membership", link: "/membership", color: "#c9ff9f" },
     ],
   },
   {
@@ -233,7 +232,7 @@ export const SLIDES: Slide[] = [
       { name: "Logo Quiz", link: "/quiz", color: "#FFF3E0" },
       { name: "Music", link: "/quiz", color: "#FFE0B2" },
       { name: "Mobile Addiction", link: "/quiz", color: "#FFCC80" },
-      { name: "Gaming Addiction", link: "/quiz", color: "#FFB74D" },
+      { name: "Gaming Addiction", link: "/quiz", color: "#FFA726" },
       { name: "Gambling Addiction", link: "/quiz", color: "#FFA726" },
       { name: "Performance Addiction", link: "/quiz", color: "#FB8C00" },
       { name: "Entertainment Addiction", link: "/quiz", color: "#E65100" },

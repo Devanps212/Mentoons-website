@@ -16,24 +16,38 @@ import { toast } from "sonner";
 import { fetchCandyCoin, spendCandyCoin } from "@/api/game/mentoonsCoin";
 import { CandyCoins } from "@/types/adda/game/candyCoins";
 import { useStatusModal } from "@/context/adda/statusModalContext";
-// import { useNavigate } from "react-router-dom";
 
-// Define maximum discount limits per product type
 const MAX_DISCOUNT_LIMITS = {
-  [ProductType.MENTOONS_CARDS]: 20, // 20 rupees max discount
-  [ProductType.MENTOONS_BOOKS]: 4, // 4 rupees max discount
-  [ProductType.COMIC]: 4, // 4 rupees max discount
-  [ProductType.AUDIO_COMIC]: 4, // 4 rupees max discount
-  [ProductType.PODCAST]: 4, // 4 rupees max discount
-  [ProductType.ASSESSMENT]: 3, // 3 rupees max discount
-  DEFAULT: 4, // Default max discount
+  [ProductType.MENTOONS_CARDS]: 20,
+  [ProductType.MENTOONS_BOOKS]: 4,
+  [ProductType.COMIC]: 4,
+  [ProductType.AUDIO_COMIC]: 4,
+  [ProductType.PODCAST]: 4,
+  [ProductType.ASSESSMENT]: 3,
+  DEFAULT: 4,
 };
 
 const MAX_CANDY_DISCOUNT_RUPEE = 5;
-const CANDY_TO_RUPEE_RATIO = 0.75 / 1000; // ₹ per candy coin
-
-// Conversion rate: how many points = 1 rupee
+const CANDY_TO_RUPEE_RATIO = 0.75 / 1000;
 const POINTS_TO_RUPEE_RATIO = 10;
+
+// NEW: returns the price that should actually be charged.
+// For toonland products, use offerPrice if it exists; otherwise fall back to price.
+const getPayablePrice = (
+  price: number,
+  offerPrice: number | undefined | null,
+  productType?: string,
+) => {
+  if (
+    productType === ProductType.TOONLAND &&
+    offerPrice !== undefined &&
+    offerPrice !== null &&
+    offerPrice >= 0
+  ) {
+    return offerPrice;
+  }
+  return price;
+};
 
 const OrderSummary: React.FC = () => {
   const { cart } = useSelector((state: RootState) => state.cart);
@@ -41,10 +55,11 @@ const OrderSummary: React.FC = () => {
   const { user } = useUser();
   const dispatch = useDispatch<AppDispatch>();
   const location = useLocation();
-  const productId: string | null = new URLSearchParams(location.search).get(
-    "productId",
-  );
+  const searchParams = new URLSearchParams(location.search);
+  const productId: string | null = searchParams.get("productId");
+
   const [productDetail, setProductDetail] = useState<ProductBase>();
+
   const { totalPoints } = useRewards();
   const [redeemPoints, setRedeemPoints] = useState(0);
   const [appliedDiscount, setAppliedDiscount] = useState(0);
@@ -118,15 +133,15 @@ const OrderSummary: React.FC = () => {
 
   useEffect(() => {
     const fetchProduct = async () => {
+      if (!productId) return;
+
       try {
-        if (productId) {
-          const response = await dispatch(fetchProductById(productId));
-          if (response.payload) {
-            setProductDetail(response.payload as ProductBase);
-          } else {
-            console.error("Invalid product data received", response);
-            toast.error("Failed to load product details");
-          }
+        const response = await dispatch(fetchProductById(productId));
+        if (response.payload) {
+          setProductDetail(response.payload as ProductBase);
+        } else {
+          console.error("Invalid product data received", response);
+          toast.error("Failed to load product details");
         }
       } catch (error) {
         console.error("Error fetching product:", error);
@@ -136,6 +151,33 @@ const OrderSummary: React.FC = () => {
 
     fetchProduct();
   }, [productId, dispatch]);
+
+  // NEW: payable price for the single-product flow
+  const productPayablePrice = productDetail
+    ? getPayablePrice(
+        productDetail.price,
+        (productDetail as any).offerPrice,
+        productDetail.type,
+      )
+    : 0;
+
+  // NEW: subtotal that respects toonland offer pricing for both flows
+  const calculateSubtotal = () => {
+    if (productDetail) {
+      return productPayablePrice;
+    }
+    if (cart.items && cart.items.length > 0) {
+      return cart.items.reduce((sum, item) => {
+        const payable = getPayablePrice(
+          item.price,
+          (item as any).offerPrice,
+          item.productType,
+        );
+        return sum + payable * (item.quantity || 1);
+      }, 0);
+    }
+    return 0;
+  };
 
   const calculateMaxDiscount = () => {
     if (productDetail) {
@@ -153,18 +195,15 @@ const OrderSummary: React.FC = () => {
     return 0;
   };
 
-  // Maximum points the user can redeem based on their total points and the max discount
   const maxRedeemablePoints = Math.min(
     totalPoints,
     calculateMaxDiscount() * POINTS_TO_RUPEE_RATIO,
   );
 
-  // Calculate the discount amount based on points
   const calculateDiscountFromPoints = (points: number) => {
     return Math.min(points / POINTS_TO_RUPEE_RATIO, calculateMaxDiscount());
   };
 
-  // Handle points redemption
   const handleApplyPoints = () => {
     if (redeemPoints <= 0) {
       toast.error("Please enter a valid number of points to redeem");
@@ -188,18 +227,19 @@ const OrderSummary: React.FC = () => {
     toast.success(`Discount of ₹${discount.toFixed(2)} applied`);
   };
 
-  // Reset applied discount
   const handleRemoveDiscount = () => {
     setRedeemPoints(0);
     setAppliedDiscount(0);
     toast.success("Discount removed");
   };
 
+  const { getToken } = useAuth();
+
   const [formData] = useState({
     merchant_id: "3545043",
     order_id: `#ORD-${Date.now()}`,
     currency: "INR",
-    amount: productDetail ? productDetail.price : cart.totalPrice,
+    amount: productDetail ? productPayablePrice : cart.totalPrice,
     redirect_url: "https://www.mentoons.com/mentons-store",
     cancel_url: "https://www.mentoons.com/mentons-store",
     language: "EN",
@@ -213,7 +253,7 @@ const OrderSummary: React.FC = () => {
     billing_zip: "400054",
     billing_country: "India",
     billing_tel: user?.phoneNumbers?.[0]?.phoneNumber
-      ? user.phoneNumbers[0].phoneNumber.replace(/^\+\d+\s*/, "") // Remove country code
+      ? user.phoneNumbers[0].phoneNumber.replace(/^\+\d+\s*/, "")
       : "0123456789",
     billing_email: user?.emailAddresses?.[0]?.emailAddress || "",
     delivery_name:
@@ -235,9 +275,6 @@ const OrderSummary: React.FC = () => {
     promo_code: "",
     userId,
   });
-  // const navigate = useNavigate();
-
-  const { getToken } = useAuth();
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -256,12 +293,9 @@ const OrderSummary: React.FC = () => {
     visible: { y: 0, opacity: 1, transition: { duration: 0.5 } },
   };
 
-  // Calculate the final amount after applying discount
+  // Final amount now built on top of the offer-price-aware subtotal
   const calculateFinalAmount = () => {
-    const originalTotal = productDetail
-      ? productDetail.price
-      : cart.totalPrice || 0;
-
+    const originalTotal = calculateSubtotal();
     return Math.max(0, originalTotal - appliedDiscount - appliedCandyDiscount);
   };
 
@@ -273,16 +307,30 @@ const OrderSummary: React.FC = () => {
       ? {
           product: productDetail._id,
           quantity: 1,
-          price: productDetail.price,
+          price: productPayablePrice, // offer price for toonland
           productName: productDetail.title,
           productType: productDetail.type,
+          source: "mentoons",
+          productImage: (productDetail as any).thumbnails?.[0],
+          fileUrl: (productDetail as any).data,
         }
       : cart.items.map((item) => ({
           product: item.productId,
           quantity: item.quantity,
-          price: item.price,
+          price: getPayablePrice(
+            item.price,
+            (item as any).offerPrice,
+            item.productType,
+          ), // offer price for toonland
           productName: item.title,
-          productType: item.productType, // Default to merchandise if type is not specified
+          productType: item.productType,
+          source: "mentoons",
+          productImage: item.productImage,
+          fileUrl:
+            item.productType === "toonland"
+              ? (item.productDetails as { fileUrl?: string } | undefined)
+                  ?.fileUrl
+              : undefined,
         }));
 
     const productInfo = productDetail
@@ -295,16 +343,15 @@ const OrderSummary: React.FC = () => {
       user: userId,
       items: formattedItems,
       paymentDetails: {
-        paymentMethod: "credit_card", // Default payment method
+        paymentMethod: "credit_card",
         paymentStatus: "initiated",
       },
       orderStatus: "pending",
       totalAmount,
-      amount: totalAmount, // Duplicate amount field as per schema
+      amount: totalAmount,
       currency: formData.currency,
       order_type: ORDER_TYPE.PRODUCT_PURCHASE,
 
-      // Additional required fields from schema
       productInfo: productInfo,
       customerName: formData.billing_name,
       email: formData.billing_email,
@@ -312,11 +359,8 @@ const OrderSummary: React.FC = () => {
       status: "PENDING",
       firstName: user?.firstName,
       lastName: user?.lastName,
-      // Add reward points details
       rewardPointsRedeemed: redeemPoints,
       discountApplied: appliedDiscount,
-      // products: productIds,
-      // Original payment gateway fields that might be needed
       orderId: formData.order_id,
     };
 
@@ -334,7 +378,6 @@ const OrderSummary: React.FC = () => {
 
       if (redeemPoints > 0) {
         try {
-          // Use the redeemPoints action from useRewardActions
           handleRedeemPoints(-redeemPoints, orderData.orderId);
           toast.success(`${redeemPoints} points redeemed successfully!`);
         } catch (error) {
@@ -422,6 +465,12 @@ const OrderSummary: React.FC = () => {
                       alt={productDetail.title}
                       className="object-cover w-12 h-12 rounded-lg"
                     />
+                  ) : (productDetail as any).thumbnails?.[0] ? (
+                    <img
+                      src={(productDetail as any).thumbnails[0]}
+                      alt={productDetail.title}
+                      className="object-cover w-12 h-12 rounded-lg"
+                    />
                   ) : (
                     <div className="flex items-center justify-center w-12 h-12 bg-gray-200 rounded-lg">
                       ?
@@ -432,46 +481,79 @@ const OrderSummary: React.FC = () => {
                   {productDetail.title}
                 </span>
               </div>
-              <span className="text-lg font-semibold text-black whitespace-nowrap">
-                ₹ {productDetail.price}
+
+              {/* Show offer price for toonland, strike through original when it differs */}
+              <span className="flex items-center gap-2 text-lg font-semibold text-black whitespace-nowrap">
+                {productDetail.type === ProductType.TOONLAND &&
+                productPayablePrice !== productDetail.price ? (
+                  <>
+                    <span className="text-sm text-gray-400 line-through">
+                      ₹ {productDetail.price}
+                    </span>
+                    <span>₹ {productPayablePrice}</span>
+                  </>
+                ) : (
+                  <span>₹ {productPayablePrice}</span>
+                )}
               </span>
             </motion.div>
           ) : cart.items && cart.items.length > 0 ? (
             <ul className="space-y-3">
-              {cart.items.map((item, index) => (
-                <motion.li
-                  key={item.productId}
-                  className="flex items-center justify-between p-3 transition-colors border border-gray-100 rounded-lg hover:bg-gray-50"
-                  variants={itemVariants}
-                  whileHover={{ scale: 1.02 }}
-                >
-                  <div className="flex items-center gap-3">
-                    <motion.div
-                      className="flex items-center justify-center w-10 h-10 font-medium text-white rounded-full order"
-                      whileHover={{ rotate: 360 }}
-                      transition={{ duration: 0.5 }}
-                    >
-                      {item.productImage ? (
-                        <img
-                          src={item.productImage}
-                          alt={item.title}
-                          className="object-cover w-12 h-12 rounded-lg"
-                        />
+              {cart.items.map((item, index) => {
+                const itemPayablePrice = getPayablePrice(
+                  item.price,
+                  (item as any).offerPrice,
+                  item.productType,
+                );
+                const isToonlandOffer =
+                  item.productType === ProductType.TOONLAND &&
+                  itemPayablePrice !== item.price;
+
+                return (
+                  <motion.li
+                    key={item.productId}
+                    className="flex items-center justify-between p-3 transition-colors border border-gray-100 rounded-lg hover:bg-gray-50"
+                    variants={itemVariants}
+                    whileHover={{ scale: 1.02 }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <motion.div
+                        className="flex items-center justify-center w-10 h-10 font-medium text-white rounded-full order"
+                        whileHover={{ rotate: 360 }}
+                        transition={{ duration: 0.5 }}
+                      >
+                        {item.productImage ? (
+                          <img
+                            src={item.productImage}
+                            alt={item.title}
+                            className="object-cover w-12 h-12 rounded-lg"
+                          />
+                        ) : (
+                          <div className="flex items-center justify-center w-12 h-12 bg-gray-200 rounded-lg">
+                            {index + 1}
+                          </div>
+                        )}
+                      </motion.div>
+                      <span className="text-lg text-black">
+                        {item.title} x {item.quantity}
+                      </span>
+                    </div>
+
+                    <span className="flex items-center gap-2 text-lg font-semibold text-black whitespace-nowrap">
+                      {isToonlandOffer ? (
+                        <>
+                          <span className="text-sm text-gray-400 line-through">
+                            ₹ {item.price}
+                          </span>
+                          <span>₹ {itemPayablePrice}</span>
+                        </>
                       ) : (
-                        <div className="flex items-center justify-center w-12 h-12 bg-gray-200 rounded-lg">
-                          {index + 1}
-                        </div>
+                        <span>₹ {itemPayablePrice}</span>
                       )}
-                    </motion.div>
-                    <span className="text-lg text-black">
-                      {item.title} x {item.quantity}
                     </span>
-                  </div>
-                  <span className="text-lg font-semibold text-black whitespace-nowrap">
-                    ₹ {item.price}
-                  </span>
-                </motion.li>
-              ))}
+                  </motion.li>
+                );
+              })}
             </ul>
           ) : (
             <motion.p
@@ -483,7 +565,7 @@ const OrderSummary: React.FC = () => {
           )}
         </motion.div>
 
-        {/* Reward Points Redemption Section */}
+        {/* Reward Points Redemption Section (unchanged) */}
         <motion.div
           className="p-6 mb-8 bg-white rounded-lg shadow-md"
           variants={itemVariants}
@@ -611,9 +693,7 @@ const OrderSummary: React.FC = () => {
           <div className="space-y-2">
             <div className="flex justify-between">
               <span className="text-gray-600">Subtotal:</span>
-              <span>
-                ₹ {productDetail ? productDetail.price : cart.totalPrice || 0}
-              </span>
+              <span>₹ {calculateSubtotal().toFixed(2)}</span>
             </div>
             {appliedDiscount > 0 && (
               <div className="flex justify-between text-green-600">

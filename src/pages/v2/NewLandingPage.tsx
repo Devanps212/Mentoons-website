@@ -2,16 +2,15 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import LandingBanner from "@/components/adda/landing/landingHero/banner";
 import { FaChevronDown } from "react-icons/fa6";
+import { FaGamepad, FaSmile, FaBook } from "react-icons/fa";
 import {
   LandingAchievements,
   LandingColors,
   LandingCommunities,
   LandingIssues,
-  LandingItems,
   LandingParentPoints,
-  LandingResults,
 } from "@/constant/adda/Landing/landingItems";
-import { ExternalLink } from "lucide-react";
+import { Baby, Users } from "lucide-react";
 import { BiSolidMessage } from "react-icons/bi";
 import { toast } from "sonner";
 import axios from "axios";
@@ -19,14 +18,45 @@ import { useAuth } from "@clerk/clerk-react";
 import { User } from "@/types";
 import EnquiryModal from "@/components/modals/EnquiryModal";
 import { ModalMessage } from "@/utils/enum";
+import ProductVideoShowCase from "@/components/Home/newVersion/productVideoShowcase";
+
+const quickLinks = [
+  { label: "Workshops", url: "/mentoons-workshops" },
+  { label: "Podcasts", url: "/mentoons-podcast" },
+  { label: "Comics", url: "/mentoons-comics" },
+  { label: "Products", url: "/products" },
+  { label: "Games", url: "/adda/game-lobby" },
+  { label: "Blog", url: "/adda" },
+];
+
+const LandingChildrenPoints = [
+  {
+    title: "Fun & Engaging Learning",
+    icon: <FaGamepad />,
+    color: "bg-orange-100 text-orange-600",
+    text: "Comics, podcasts and games designed to make learning about emotions and real-life skills genuinely fun for kids.",
+  },
+  {
+    title: "Emotional Growth",
+    icon: <FaSmile />,
+    color: "bg-yellow-100 text-yellow-600",
+    text: "Age-appropriate content that helps children recognise, understand and express their feelings in healthy ways.",
+  },
+  {
+    title: "Real-Life Skills",
+    icon: <FaBook />,
+    color: "bg-purple-100 text-purple-600",
+    text: "Workshops and stories that build confidence, friendship skills and independence away from the screen.",
+  },
+];
 
 const NewLandingPage = () => {
   const navigate = useNavigate();
   const [colorIndex, setColorIndex] = useState(0);
   const [openIssue, setOpenIssue] = useState<null | number>(null);
   const [openAchievement, setOpenAchievement] = useState<null | number>(null);
-  const [openParent, setOpenParent] = useState<null | number>(null);
-  const [openResults, setOpenResults] = useState<null | number>(null);
+  const [openParentPoint, setOpenParentPoint] = useState<null | number>(null);
+  const [openChildPoint, setOpenChildPoint] = useState<null | number>(null);
   const [enquiryMessage, setEnquiryMessage] = useState("");
   const [enquiryEmail, setEnquiryEmail] = useState("");
   const [enquiryName, setEnquiryName] = useState("");
@@ -96,24 +126,9 @@ const NewLandingPage = () => {
   return (
     <>
       <LandingBanner />
-      <div className="min-h-screen bg-gradient-to-b from-white to-orange-50 px-4 md:px-12 lg:px-28 pb-8 lg:py-16 space-y-10 md:space-y-14">
+      <div className="min-h-screen bg-gradient-to-b from-white to-orange-50 px-4 md:px-12 lg:px-28 pb-8  space-y-10 md:space-y-14">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div className="space-y-10 flex flex-col-reverse lg:flex-col">
-            <div className="flex flex-wrap gap-3 md:gap-6 mt-5 lg:mt-0">
-              {LandingItems.map((item, ind) => (
-                <div
-                  key={ind}
-                  onClick={() => navigate(item.url)}
-                  className="px-3 md:px-6 py-2 md:py-3 rounded-xl border border-orange-200 
-                bg-white shadow-sm md:text-lg font-semibold cursor-pointer
-                transition-all duration-300
-                hover:bg-orange-500 hover:text-white hover:scale-105 hover:shadow-lg"
-                >
-                  {item.title}
-                </div>
-              ))}
-            </div>
-
             <div className="space-y-6 max-w-2xl">
               <h2 className="text-3xl lg:text-6xl font-bold leading-tight text-gray-900">
                 <span style={{ color: LandingColors[colorIndex] }}>
@@ -130,16 +145,29 @@ const NewLandingPage = () => {
                 between gadgets, social media and real-life relationships.
               </p>
 
-              <div className="w-full flex justify-between">
+              <div className="w-full flex justify-between items-center">
                 <img
                   src="/assets/home/psychologist-developed.png"
                   alt=""
-                  className="h-40 md:h-60 lg:h-40"
+                  className="h-40 md:h-60 lg:h-40 hidden sm:block"
                 />
+
+                <div className="flex flex-wrap justify-center gap-2 md:gap-3">
+                  {quickLinks.map((item, ind) => (
+                    <button
+                      key={ind}
+                      onClick={() => navigate(item.url)}
+                      className="px-3 py-1.5 rounded-full border border-orange-300 bg-white text-xs md:text-sm font-semibold text-gray-700 shadow-sm hover:bg-orange-500 hover:text-white hover:scale-105 transition-all duration-300"
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+
                 <img
                   src="/assets/home/landing-mobile.png"
                   alt=""
-                  className="h-40 md:h-60 lg:h-40 block"
+                  className="h-40 md:h-60 lg:h-40 hidden sm:block"
                 />
               </div>
             </div>
@@ -150,82 +178,79 @@ const NewLandingPage = () => {
               <div className="absolute -inset-4 bg-orange-200 blur-2xl opacity-40 rounded-full"></div>
 
               <img
-                src="https://mentoons-products.s3.ap-northeast-1.amazonaws.com/1234/team+Illustration+3.png"
+                src="https://mentoons-products.s3.ap-northeast-1.amazonaws.com/uploads/OpinionJournal/1783594514947-27275b14-8f64-4d0f-810a-b8442e6db018.png"
                 alt="Mentoon Team"
                 className="relative w-full max-w-lg drop-shadow-xl"
               />
             </div>
           </div>
         </div>
+        <ProductVideoShowCase />
 
-        {/* ISSUES SECTION */}
-        <div className="space-y-8 md:space-y-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-800 relative">
-            <span className="relative z-10">
-              Are you struggling with the following issues?
-            </span>
-            <div className="absolute left-1/2 -bottom-3 -translate-x-1/2 w-24 h-1 bg-orange-400 rounded-full"></div>
-          </h2>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-8 items-start self-start">
-            {LandingIssues.map((issue, ind) => {
-              const isOpen = openIssue === ind;
-
-              return (
-                <div
-                  key={ind}
-                  onClick={() => setOpenIssue(isOpen ? null : ind)}
-                  className="cursor-pointer bg-white p-6 rounded-3xl border-2 border-orange-100 shadow-md hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 relative overflow-hidden"
-                >
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-400 via-yellow-400 to-pink-400"></div>
-
-                  {/* Header */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div
-                        className="w-14 h-14 flex items-center justify-center rounded-xl text-2xl"
-                        style={{
-                          color: issue.iconColor,
-                          backgroundColor: `${issue.iconColor}20`,
-                        }}
-                      >
-                        {issue.icon}
-                      </div>
-
-                      <h3 className="text-xl font-semibold text-gray-800">
-                        {issue.title}
-                      </h3>
-                    </div>
-
-                    <FaChevronDown
-                      className={`transition-transform duration-300 text-gray-500 ${
-                        isOpen ? "rotate-180" : ""
-                      }`}
-                    />
-                  </div>
-
-                  <div
-                    className={`overflow-hidden transition-all duration-300 ${
-                      isOpen ? "max-h-40 mt-4 opacity-100" : "max-h-0 opacity-0"
-                    }`}
-                  >
-                    <p className="text-lg font-medium text-gray-600">
-                      {issue.text}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* SECTION BREAK */}
+        {/* SECTION BREAK — ISSUES + REASSURANCE COMBINED */}
         <div className="relative py-14 lg:py-24 bg-gradient-to-br from-orange-50 via-white to-yellow-50 rounded-3xl overflow-hidden">
           <div className="absolute -top-10 -left-10 w-40 h-40 bg-orange-200 rounded-full blur-3xl opacity-40"></div>
           <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-pink-200 rounded-full blur-3xl opacity-40"></div>
 
-          <div className="grid lg:grid-cols-2 gap-10 items-center max-w-6xl mx-auto px-6">
-            <div className="space-y-6 ">
+          <div className="grid lg:grid-cols-5 gap-10 items-center max-w-6xl mx-auto px-6">
+            <div className="lg:col-span-2 space-y-4">
+              <span className="inline-block text-xs font-semibold tracking-wide text-orange-800 bg-orange-100 px-3 py-1 rounded-full">
+                {LandingIssues.length} common challenges
+              </span>
+
+              <div className="w-full bg-white rounded-3xl border border-orange-100 shadow-md overflow-hidden">
+                {LandingIssues.map((issue, ind) => {
+                  const isOpen = openIssue === ind;
+                  const isLast = ind === LandingIssues.length - 1;
+
+                  return (
+                    <div
+                      key={ind}
+                      className={`${!isLast ? "border-b border-orange-100" : ""} ${
+                        isOpen ? "bg-orange-50/40" : ""
+                      } transition-colors duration-200`}
+                    >
+                      <div
+                        onClick={() => setOpenIssue(isOpen ? null : ind)}
+                        className="cursor-pointer px-4 py-3 flex items-center gap-3 hover:bg-orange-50/30 transition-colors duration-200"
+                      >
+                        <div
+                          className="w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-lg text-base"
+                          style={{
+                            color: issue.iconColor,
+                            backgroundColor: `${issue.iconColor}20`,
+                          }}
+                        >
+                          {issue.icon}
+                        </div>
+
+                        <h3 className="text-sm font-semibold text-gray-800 flex-1">
+                          {issue.title}
+                        </h3>
+
+                        <FaChevronDown
+                          className={`flex-shrink-0 text-xs transition-transform duration-300 text-gray-400 ${
+                            isOpen ? "rotate-180" : ""
+                          }`}
+                        />
+                      </div>
+
+                      <div
+                        className={`overflow-hidden transition-all duration-300 ${
+                          isOpen ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
+                        }`}
+                      >
+                        <p className="text-xs text-gray-600 px-4 pb-3 pl-16 leading-relaxed">
+                          {issue.text}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="lg:col-span-3 space-y-6">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 leading-tight">
                 If you're facing these challenges,
                 <span className="block text-[#FFAA15] mt-2">don't worry!</span>
@@ -243,15 +268,14 @@ const NewLandingPage = () => {
               >
                 Discover How →
               </button>
-            </div>
 
-            {/* IMAGE */}
-            <div className="flex justify-center lg:justify-end">
-              <img
-                src="/assets/home/help.png"
-                alt="Help Illustration"
-                className="w-[320px] md:w-[420px] drop-shadow-xl hover:scale-105 transition duration-300"
-              />
+              <div className="flex justify-center lg:justify-start pt-2">
+                <img
+                  src="/assets/home/help.png"
+                  alt="Help Illustration"
+                  className="w-[240px] md:w-[300px] drop-shadow-xl hover:scale-105 transition duration-300"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -310,42 +334,35 @@ const NewLandingPage = () => {
           </div>
         </div>
 
-        {/* PARENTS SECTION */}
+        {/* PARENTS & CHILDREN CARDS */}
         <div className="relative overflow-hidden rounded-3xl py-5 lg:py-16">
-          <div className="relative grid lg:grid-cols-2 gap-16 items-start">
-            <div className="space-y-5 md:space-y-8 bg-white shadow-md border border-gray-100 p-5 lg:p-8 rounded-3xl">
-              <h2 className="text-5xl font-bold text-gray-700">PARENTS!</h2>
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-10">
+            <div className="flex flex-col gap-6 bg-white shadow-md border border-gray-100 p-6 lg:p-8 rounded-3xl hover:shadow-2xl transition-all duration-300">
+              <div className="flex flex-col items-center text-center gap-4">
+                <div className="w-16 h-16 flex items-center justify-center rounded-2xl bg-orange-100 text-orange-500">
+                  <Users className="w-8 h-8" />
+                </div>
 
-              <div className="space-y-1">
-                <p className="text-xl text-gray-500 leading-relaxed max-w-xl">
+                <h2 className="text-3xl font-bold text-gray-800">
+                  For Parents
+                </h2>
+
+                <p className="text-lg text-gray-600 leading-relaxed">
                   Begin your journey with us today and unlock the true potential
-                  of your child.
+                  of your child with tools built by psychologists and mentors.
                 </p>
-
-                <button
-                  className="inline-flex items-center gap-2 text-blue-700 font-medium cursor-pointer group w-fit"
-                  onClick={() => navigate("/messag-from-founder")}
-                >
-                  <span className="relative">
-                    Message from the founder
-                    <span className="absolute left-0 -bottom-0.5 w-0 h-[2px] bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
-                  </span>
-
-                  <ExternalLink className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                </button>
               </div>
 
               <div className="space-y-4">
                 {LandingParentPoints.map((item, ind) => {
-                  const isOpen = openParent === ind;
+                  const isOpen = openParentPoint === ind;
 
                   return (
                     <div
                       key={ind}
-                      onClick={() => setOpenParent(isOpen ? null : ind)}
+                      onClick={() => setOpenParentPoint(isOpen ? null : ind)}
                       className="cursor-pointer bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition"
                     >
-                      {/* header */}
                       <div className="flex justify-between items-center">
                         <div className="flex gap-4 items-center">
                           <div
@@ -366,7 +383,6 @@ const NewLandingPage = () => {
                         />
                       </div>
 
-                      {/* animated text */}
                       <div
                         className={`overflow-hidden transition-all duration-300 ${
                           isOpen
@@ -383,111 +399,118 @@ const NewLandingPage = () => {
 
               <button
                 onClick={() => navigate("/")}
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-orange-400 to-orange-500 text-white font-semibold  shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-orange-400 to-orange-500 text-white font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 self-center"
               >
                 Start Your Journey →
               </button>
             </div>
 
-            <div className="space-y-8 shadow-md border border-gray-100 bg-white p-5 lg:p-8 rounded-3xl">
-              <h2 className="text-4xl font-bold text-gray-700">
-                Join Our Community
-              </h2>
+            <div className="flex flex-col gap-6 bg-white shadow-md border border-gray-100 p-6 lg:p-8 rounded-3xl hover:shadow-2xl transition-all duration-300">
+              <div className="flex flex-col items-center text-center gap-4">
+                <div className="w-16 h-16 flex items-center justify-center rounded-2xl bg-orange-100 text-orange-500">
+                  <Baby className="w-8 h-8" />
+                </div>
 
-              <p className="text-gray-500 text-lg">
-                Be part of a growing family focused on learning, creativity and
-                emotional well-being.
-              </p>
+                <h2 className="text-3xl font-bold text-gray-800">
+                  For Children
+                </h2>
 
-              <div className="grid grid-cols-2 gap-4 md:gap-5">
-                {LandingCommunities.map((item, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-3 md:gap-4 bg-white p-3 md:p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
-                  >
-                    <div
-                      className={`w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-xl text-xl ${item.color}`}
-                    >
-                      {item.icon}
-                    </div>
-
-                    <p className="text-lg font-semibold text-gray-700">
-                      {item.name}
-                    </p>
-                  </div>
-                ))}
+                <p className="text-lg text-gray-600 leading-relaxed">
+                  Comics, podcasts, games and workshops designed to help kids
+                  build emotional balance and real-life connection.
+                </p>
               </div>
-              <button
-                onClick={() => navigate("/community")}
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-orange-400 to-orange-500 text-white font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
-              >
-                Join Now →
-              </button>
-            </div>
-          </div>
-        </div>
 
-        {/* RESULTS SECTION */}
-        <div className="grid lg:grid-cols-2 gap-16 items-start">
-          <div className=" lg:space-y-10 space-y-5 md:space-y-8 bg-white shadow-md border border-gray-100 p-5 lg:p-8 rounded-3xl">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-700">
-              The Results You Will See
-            </h2>
+              <div className="space-y-4">
+                {LandingChildrenPoints.map((item, ind) => {
+                  const isOpen = openChildPoint === ind;
 
-            <div className="grid gap-5 lg:gap-6 items-start">
-              {LandingResults.map((item, ind) => {
-                const isOpen = openResults === ind;
-
-                return (
-                  <div
-                    key={ind}
-                    onClick={() => setOpenResults(isOpen ? null : ind)}
-                    className="cursor-pointer relative group rounded-xl p-[2px] bg-gradient-to-br from-orange-400 via-pink-400 to-indigo-400 transition-all duration-300 hover:scale-[1.03]"
-                  >
-                    <div className="bg-white rounded-3xl p-4 lg:p-7 shadow-lg group-hover:shadow-2xl transition">
-                      {/* HEADER */}
-                      <div className="flex items-center justify-between ">
-                        <div className="flex items-center gap-4">
+                  return (
+                    <div
+                      key={ind}
+                      onClick={() => setOpenChildPoint(isOpen ? null : ind)}
+                      className="cursor-pointer bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition"
+                    >
+                      <div className="flex justify-between items-center">
+                        <div className="flex gap-4 items-center">
                           <div
-                            className="w-14 h-14 flex items-center justify-center rounded-xl text-2xl"
-                            style={{
-                              color: item.color,
-                              backgroundColor: `${item.color}20`,
-                            }}
+                            className={`w-12 h-12 flex items-center justify-center rounded-xl text-xl ${item.color}`}
                           >
                             {item.icon}
                           </div>
 
-                          <h3 className="text-xl font-semibold text-gray-800">
+                          <p className="text-lg font-semibold text-gray-800">
                             {item.title}
-                          </h3>
+                          </p>
                         </div>
 
-                        {/* Arrow */}
                         <FaChevronDown
-                          className={`text-gray-500 transition-transform duration-300 ${
+                          className={`transition-transform duration-300 ${
                             isOpen ? "rotate-180" : ""
                           }`}
                         />
                       </div>
 
-                      {/* EXPANDABLE TEXT */}
                       <div
                         className={`overflow-hidden transition-all duration-300 ${
                           isOpen
-                            ? "max-h-40 opacity-100 mt-2"
+                            ? "max-h-40 mt-4 opacity-100"
                             : "max-h-0 opacity-0"
                         }`}
                       >
-                        <p className="text-gray-600 text-lg leading-relaxed">
-                          {item.text}
-                        </p>
+                        <p className="text-gray-600 text-lg">{item.text}</p>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
+
+              <button
+                onClick={() => navigate("/adda/game-lobby")}
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-orange-400 to-orange-500 text-white font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 self-center"
+              >
+                Explore Now →
+              </button>
             </div>
+          </div>
+        </div>
+
+        {/* JOIN OUR COMMUNITY + DOUBT FORM */}
+        <div className="grid lg:grid-cols-2 gap-16 items-start">
+          <div className="space-y-8 shadow-md border border-gray-100 bg-white p-5 lg:p-8 rounded-3xl">
+            <h2 className="text-4xl font-bold text-gray-700">
+              Join Our Community
+            </h2>
+
+            <p className="text-gray-500 text-lg">
+              Be part of a growing family focused on learning, creativity and
+              emotional well-being.
+            </p>
+
+            <div className="grid grid-cols-2 gap-4 md:gap-5">
+              {LandingCommunities.map((item, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-3 md:gap-4 bg-white p-3 md:p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+                >
+                  <div
+                    className={`w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-xl text-xl ${item.color}`}
+                  >
+                    {item.icon}
+                  </div>
+
+                  <p className="text-lg font-semibold text-gray-700">
+                    {item.name}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => navigate("/community")}
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-orange-400 to-orange-500 text-white font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+            >
+              Join Now →
+            </button>
           </div>
 
           <div className="flex flex-col gap-6 p-8 text-center border border-orange-100 bg-gradient-to-br from-white to-orange-50 shadow-xl rounded-3xl">

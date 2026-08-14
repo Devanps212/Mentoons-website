@@ -193,15 +193,15 @@ const AdminSidebar = ({
 
         <SidebarSection
           icon={<FaBriefcase size={collapsed ? 20 : 16} />}
-          title="Career Corner"
+          title="Career"
           items={[
             { href: "/admin/all-jobs", label: "All Jobs" },
             { href: "/admin/hiring-form", label: "Add Job" },
             { href: "/admin/view-applications", label: "View Applications" },
           ]}
           isCollapsed={collapsed}
-          isExpanded={expandedSection === "Career Corner"}
-          toggleSection={() => toggleSection("Career Corner")}
+          isExpanded={expandedSection === "Career"}
+          toggleSection={() => toggleSection("Career")}
           onItemClick={handleLinkClick}
         />
 
@@ -305,6 +305,15 @@ const AdminSidebar = ({
           isCollapsed={collapsed}
           isExpanded={expandedSection === "Quiz"}
           toggleSection={() => toggleSection("Quiz")}
+          onItemClick={handleLinkClick}
+        />
+        <SidebarSection
+          icon={<FaBriefcase size={collapsed ? 20 : 16} />}
+          title="Applicants"
+          items={[{ href: "/admin/applicants", label: "Manage Applicants" }]}
+          isCollapsed={collapsed}
+          isExpanded={expandedSection === "Applicants"}
+          toggleSection={() => toggleSection("Applicants")}
           onItemClick={handleLinkClick}
         />
       </nav>

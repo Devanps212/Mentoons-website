@@ -50,6 +50,16 @@ const LandingBanner = () => {
   ];
   const slide = totalSlides[displaySlide];
 
+  const goToSlide = (index: number) => {
+    if (animating || index === displaySlide) return;
+    setDirection(index > displaySlide ? "next" : "prev");
+    setAnimating(true);
+    setTimeout(() => {
+      setDisplaySlide(index);
+      setAnimating(false);
+    }, 500);
+  };
+
   const handlePrev = () => {
     if (animating) return;
     setDirection("prev");
@@ -185,8 +195,8 @@ const LandingBanner = () => {
             </span>
           </div>
 
-          <h1 className="text-xl font-semibold text-gray-800 [text-shadow:0_2px_6px_rgba(0,0,0,0.2)]">
-            Welcome to <span className="text-white">Mentoons</span>
+          <h1 className="text-xl font-semibold text-gray-900 [text-shadow:0_2px_6px_rgba(0,0,0,0.1)]">
+            Welcome to <span className="text-[#4A1B0C]">Mentoons</span>
           </h1>
 
           <h1 className="banner-headline text-7xl font-semibold leading-tight text-gray-900">
@@ -308,7 +318,7 @@ const LandingBanner = () => {
       </div>
 
       <div
-        className="flex items-start justify-center gap-4 z-30"
+        className="flex items-center justify-center gap-4 z-30"
         style={{ position: "relative", zIndex: 3 }}
       >
         <button
@@ -319,6 +329,22 @@ const LandingBanner = () => {
             <FaChevronLeft className="text-white" />
           </div>
         </button>
+
+        <div className="flex items-center gap-2 px-2">
+          {totalSlides.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => goToSlide(index)}
+              aria-label={`Go to slide ${index + 1}`}
+              className={`rounded-full transition-all duration-300 ${
+                index === displaySlide
+                  ? "w-6 h-2.5 bg-gray-800"
+                  : "w-2.5 h-2.5 bg-gray-800/30 hover:bg-gray-800/50"
+              }`}
+            />
+          ))}
+        </div>
+
         <button
           onClick={handleNext}
           className="w-12 h-12 p-1 bg-gray-600/75 rounded-full overflow-hidden"

@@ -60,6 +60,9 @@ import Collaborate from "./pages/v2/joinus/collaborate/collaborate.tsx";
 import BecomeMentor from "./pages/v2/joinus/becomeMentor.tsx";
 import MessageFromFounder from "./pages/v2/MessageFromFounder.tsx";
 import NewLandingPage from "./pages/v2/newLandingPage.tsx";
+import DailyReport from "./components/employee/report/dailyReport.tsx";
+import OtherProduct from "./pages/otherProducts/OtherProduct";
+import ToonlandProductPage from "./pages/v2/user/products/toonlandProduct.tsx";
 // import NewHome from "./pages/v2/home/home.tsx";
 // import WorkshopV2 from "./pages/v2/workshop/workshopV2.tsx";
 
@@ -123,6 +126,10 @@ const routes = [
   { path: "/website-plans", element: <Plans /> },
   { path: "/mentoons-store", element: <MentoonsStore /> },
   { path: "/mentoons-store/product/:productId", element: <ProductDetails /> },
+  {
+    path: "/mentoons-store/toonland-product/:productId",
+    element: <ToonlandProductPage />,
+  },
   { path: "/mentoons-privacy-policy", element: <PolicyPage /> },
   { path: "/mentoons-term-conditions", element: <TermsAndConditions /> },
   { path: "/join-us/careers", element: <CareerPage /> },
@@ -172,6 +179,8 @@ const routes = [
   { path: "/emi", element: <Emi /> },
   { path: "/feedback", element: <Feedback /> },
   { path: "/messag-from-founder", element: <MessageFromFounder /> },
+  { path: "/report", element: <DailyReport /> },
+  { path: "/other-product/:productId", element: <OtherProduct /> },
 ];
 
 const Router = () => {

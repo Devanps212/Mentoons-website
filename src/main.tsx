@@ -15,6 +15,20 @@ import { useGSAP } from "@gsap/react";
 
 gsap.registerPlugin(useGSAP, Flip, ScrollTrigger, SplitText);
 
+import { ReactNode, useEffect } from "react";
+import { useAuth } from "@clerk/clerk-react";
+import { setGetToken } from "./api/axios.ts";
+
+const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const { getToken } = useAuth();
+
+  useEffect(() => {
+    setGetToken(getToken);
+  }, [getToken]);
+
+  return children;
+};
+
 if (!PUBLISHABLE_KEY) {
   throw new Error("Missing Publishable Key");
 }
@@ -52,7 +66,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <Provider store={store}>
         <AuthModalProvider>
           <StatusModalProvider>
-            <App />
+            <AuthProvider>
+              <App />
+            </AuthProvider>
             <CustomCursor />
           </StatusModalProvider>
         </AuthModalProvider>

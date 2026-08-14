@@ -5,6 +5,7 @@ import AddProduct from "@/pages/admin/addProduct";
 import AllottedCalls from "@/pages/admin/allottedCalls";
 import AddNewBadge from "@/pages/admin/badge/addBadge";
 import BadgeManagement from "@/pages/admin/badge/badgeManagement";
+import ApplicantsTable from "@/pages/admin/candidate/candidate";
 import AddCommunity from "@/pages/admin/community/addCommunity";
 import AllCommunities from "@/pages/admin/community/communityManagement";
 // import AllottedCalls from "@/pages/admin/allottedCalls";
@@ -30,6 +31,7 @@ import PsychologistsTable from "@/pages/admin/professionalRecords/pychologists";
 import AdminProfile from "@/pages/admin/profile";
 import AddQuiz from "@/pages/admin/quiz/addQuiz";
 import QuizTable from "@/pages/admin/quiz/quiz";
+import RevenuePage from "@/pages/admin/revenuePage";
 import Role from "@/pages/admin/roleSelection/role";
 // import SessionEnquiries from "@/pages/admin/sessionAllocation/session";
 import AdminTaskDashboard from "@/pages/admin/taskSubmissions";
@@ -110,12 +112,14 @@ const AdminRouter = () => {
           <Route path="leave-management" element={<AdminLeaveManagement />} />
           <Route path="employee-attendance" element={<AdminAttendanceView />} />
           <Route path="add-quiz" element={<AddQuiz />} />
+          <Route path="applicants" element={<ApplicantsTable />} />
           <Route path="quiz" element={<QuizTable />} />
           <Route
             path="workshop-sessions/:workshopId"
             element={<SinglePsychologistWorkshop />}
           />
           <Route path="feedback" element={<Feedback />} />
+          <Route path="revenue" element={<RevenuePage />} />
         </Route>
         <Route path="/test" element={<Role />} />
       </Routes>

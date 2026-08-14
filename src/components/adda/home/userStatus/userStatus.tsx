@@ -21,13 +21,10 @@ import DosAndDonts from "../../status/dosAndDonts";
 import "swiper/swiper-bundle.css";
 import { gsap } from "gsap";
 
+const IMAGE_MAX_BYTES = 5 * 1024 * 1024;
+const VIDEO_MAX_BYTES = 10 * 1024 * 1024;
+
 const categories = [
-  // {
-  //   name: "Fun & Entertainment",
-  //   path: "/fun-entertainment",
-  //   imageUrl: "/assets/adda/fun-Entertainement.jpg",
-  //   hover: "Try me",
-  // },
   {
     name: "Free Downloads",
     path: "/free-download",
@@ -80,7 +77,6 @@ const UserStatus = () => {
 
   useEffect(() => {
     const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
-
     tl.fromTo(sectionRef.current, { opacity: 0 }, { opacity: 1, duration: 0.4 })
       .fromTo(
         guidelinesLinkRef.current,
@@ -224,26 +220,40 @@ const UserStatus = () => {
       openAuthModal("sign-in");
       return;
     }
+
     const file = event.target.files && event.target.files[0];
+
     if (file) {
-      const validTypes = [
-        "image/jpeg",
-        "image/jpg",
-        "image/png",
-        "image/webp",
-        "video/mp4",
-        "video/webm",
-      ];
+      const imageTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+      const videoTypes = ["video/mp4", "video/webm"];
+      const validTypes = [...imageTypes, ...videoTypes];
+
       if (!validTypes.includes(file.type)) {
-        toast.error("Invalid file type. Please upload an image or video.");
+        toast.error(
+          "Invalid file type. Please upload a JPG, PNG, WEBP image or MP4/WEBM video.",
+        );
+        if (fileInputRef.current) fileInputRef.current.value = "";
         return;
       }
-      if (file.size > 10 * 1024 * 1024) {
-        toast.error("File is too large. Maximum size is 10MB.");
+
+      const isImage = imageTypes.includes(file.type);
+      const isVideo = videoTypes.includes(file.type);
+
+      if (isImage && file.size > IMAGE_MAX_BYTES) {
+        toast.error("Image is too large. Maximum size for images is 5MB.");
+        if (fileInputRef.current) fileInputRef.current.value = "";
         return;
       }
+
+      if (isVideo && file.size > VIDEO_MAX_BYTES) {
+        toast.error("Video is too large. Maximum size for videos is 10MB.");
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        return;
+      }
+
       setSelectedFile(file);
     }
+
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -269,22 +279,19 @@ const UserStatus = () => {
             })
           : selectedFile;
       await dispatch(
-        createStatus({
-          file: fileToUpload,
-          caption,
-          token,
-        }),
+        createStatus({ file: fileToUpload, caption, token }),
       ).unwrap();
       toast.success("Status uploaded successfully!");
       setIsSuccess(false);
       setLoading(false);
       setSelectedFile(null);
     } catch (error) {
-      console.error("Error uploading status:", error);
       toast.error(
-        error instanceof Error
-          ? error.message
-          : "Failed to upload status. Please try again.",
+        typeof error === "string"
+          ? error
+          : error instanceof Error
+            ? error.message
+            : "Failed to upload status. Please try again.",
       );
     } finally {
       setIsUploading(false);
@@ -298,18 +305,19 @@ const UserStatus = () => {
       toast.success("Status deleted successfully!");
       setSelectedStatusGroup(null);
     } catch (error) {
-      console.error("Error deleting status:", error);
       toast.error(
-        error instanceof Error
-          ? error.message
-          : "Failed to delete status. Please try again.",
+        typeof error === "string"
+          ? error
+          : error instanceof Error
+            ? error.message
+            : "Failed to delete status. Please try again.",
       );
     }
   };
 
   return (
     <section ref={sectionRef} className="w-full">
-      <div className="flex items-end justify-start gap-1 md:gap-4 md:px-2 sm:flex-row sm:gap-10 sm:px-4 ">
+      <div className="flex items-end justify-start gap-1 md:gap-4 md:px-2 sm:flex-row sm:gap-10 sm:px-4">
         <div className="flex flex-col items-center justify-center flex-shrink-0 gap-1">
           <button
             ref={guidelinesLinkRef}
@@ -336,7 +344,7 @@ const UserStatus = () => {
               ref={fileInputRef}
               hidden
               onChange={handleFileChange}
-              accept="image/jpeg, image/jpg, image/png, image/webp, video/mp4, video/webm"
+              accept="image/jpeg,image/jpg,image/png,image/webp,video/mp4,video/webm"
               disabled={isUploading}
             />
           </label>
@@ -345,7 +353,7 @@ const UserStatus = () => {
 
         <div
           ref={swiperWrapperRef}
-          className="flex-grow w-full mt-2 overflow-x-auto scrollbar-thin scrollbar-thumb-[#EC9600] scrollbar-track-gray-100 sm:mt-0 "
+          className="flex-grow w-full mt-2 overflow-x-auto scrollbar-thin scrollbar-thumb-[#EC9600] scrollbar-track-gray-100 sm:mt-0"
         >
           <Swiper
             spaceBetween={8}
@@ -365,7 +373,7 @@ const UserStatus = () => {
             {statusGroups.map((statusGroup, i) => (
               <SwiperSlide
                 key={statusGroup.user._id}
-                className="!w-[70px] md:!w-[90px]  flex flex-col items-center gap-1"
+                className="!w-[70px] md:!w-[90px] flex flex-col items-center gap-1"
                 style={{ justifyItems: "center" }}
               >
                 <div
@@ -407,7 +415,7 @@ const UserStatus = () => {
             {categories.map((category, i) => (
               <SwiperSlide
                 key={category.path}
-                className="!w-[70px] md:!w-[90px]  flex flex-col items-center gap-1"
+                className="!w-[70px] md:!w-[90px] flex flex-col items-center gap-1"
                 style={{ justifyItems: "center" }}
               >
                 <NavLink

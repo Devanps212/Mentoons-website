@@ -128,35 +128,51 @@ const AboutWorkshop = ({ categories }: AboutWorkshopProps) => {
           rotate: imageRotate,
           scale: imageScale,
         }}
-        className="flex items-center justify-center w-full max-w-md md:max-w-lg flex-1 mt-6 md:mt-0 relative px-4"
+        className="flex flex-col items-center justify-center w-full max-w-md md:max-w-lg flex-1 mt-10 md:mt-0 relative px-4"
       >
+        {/* soft color blob behind the card */}
+        <div className="absolute w-56 h-56 sm:w-72 sm:h-72 md:w-80 md:h-80 bg-orange-200/50 rounded-[40%] blur-2xl -z-10" />
+
         {workshopImages.length > 0 ? (
-          <motion.img
+          <motion.div
             key={currentIndex}
-            src={workshopImages[currentIndex]}
-            alt={`workshop-${currentIndex}`}
-            className="shadow-2xl object-cover h-64 w-64 sm:h-80 sm:w-80 md:h-96 md:w-96 rounded-full"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, scale: 0.9, rotate: -3 }}
+            animate={{ opacity: 1, scale: 1, rotate: -2 }}
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ duration: 0.8, ease: [0.43, 0.13, 0.23, 0.96] }}
-          />
+            className="relative bg-white p-3 sm:p-4 pb-8 sm:pb-10 rounded-2xl shadow-2xl border border-gray-100 w-64 sm:w-80 md:w-96"
+          >
+            <div className="w-full aspect-square rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center">
+              <img
+                src={workshopImages[currentIndex]}
+                alt={`workshop-${currentIndex}`}
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <span className="absolute -top-3 left-1/2 -translate-x-1/2 rotate-2 bg-orange-500 text-white text-[10px] sm:text-xs font-bold px-3 py-1 rounded-full shadow-md">
+              Workshop Moments
+            </span>
+          </motion.div>
         ) : (
-          <img
-            src="/assets/workshopv2/workshopNew.png"
-            alt="default-workshop"
-            className="rounded-2xl shadow-lg object-contain max-h-64 sm:max-h-80 md:max-h-96 w-full"
-          />
+          <div className="relative bg-white p-3 sm:p-4 rounded-2xl shadow-2xl border border-gray-100 w-64 sm:w-80 md:w-96">
+            <img
+              src="/assets/workshopv2/workshopNew.png"
+              alt="default-workshop"
+              className="rounded-xl object-contain w-full aspect-square"
+            />
+          </div>
         )}
 
         {workshopImages.length > 1 && (
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-2">
+          <div className="mt-4 sm:mt-5 flex gap-2">
             {workshopImages.map((_, i) => (
               <button
                 key={i}
                 onClick={() => setCurrentIndex(i)}
-                className={`h-2 w-2 rounded-full transition-all ${
-                  i === currentIndex ? "bg-primary w-4" : "bg-gray-300"
+                className={`h-2 rounded-full transition-all ${
+                  i === currentIndex
+                    ? "bg-orange-500 w-5"
+                    : "bg-gray-300 w-2 hover:bg-gray-400"
                 }`}
               />
             ))}

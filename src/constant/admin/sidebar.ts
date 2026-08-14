@@ -55,4 +55,8 @@ export const SECTIONS = [
     title: "Badges",
     paths: ["/admin/badge", "/admin/add-badge"],
   },
+  {
+    title: "Applicants",
+    paths: ["/admin/applicants"],
+  },
 ];

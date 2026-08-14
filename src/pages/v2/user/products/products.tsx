@@ -34,6 +34,10 @@ interface FetchParams {
   ageCategory?: string;
 }
 
+// Label used when grouping/displaying Toonland products, which never
+// carry an `ageCategory` value (their schema doesn't have one).
+const TOONLAND_GROUP_LABEL = "Toonland Products";
+
 const ProductsPage = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
@@ -210,25 +214,38 @@ const ProductsPage = () => {
 
   const searchLower = searchTerm?.toLowerCase() || "";
 
+  // This page shows MENTOONS_CARDS / MENTOONS_BOOKS / TOONLAND. The
+  // `products` array pulled from the store can also contain other
+  // types that don't set `ageCategory` at all — since that field is
+  // optional on the base Product schema (toonland products in
+  // particular never set it). Every access below falls back to ""
+  // instead of assuming ageCategory exists, so a product without one
+  // can no longer crash this filter.
   const filteredProducts = products.filter((product) => {
     const matchesType =
       product.type === ProductType.MENTOONS_CARDS ||
-      product.type === ProductType.MENTOONS_BOOKS;
+      product.type === ProductType.MENTOONS_BOOKS ||
+      product.type === ProductType.TOONLAND;
 
+    const ageCategory = product.ageCategory || "";
+
+    // Toonland products don't have an age category at all, so the
+    // age-category filter (the pill buttons) should never exclude them —
+    // they only get filtered out by search below.
     const matchesCategory =
-      !category || searchLower ? true : product.ageCategory === category;
+      product.type === ProductType.TOONLAND || !category || searchLower
+        ? true
+        : ageCategory === category;
 
     const titleMatch = product.title.toLowerCase().includes(searchLower);
-    const categoryMatch = product.ageCategory
-      .toLowerCase()
-      .includes(searchLower);
+    const categoryMatch = ageCategory.toLowerCase().includes(searchLower);
 
     let ageMatch = false;
     const searchNumber = parseInt(searchLower);
-    if (!isNaN(searchNumber) && product.ageCategory.includes("-")) {
-      const [min, max] = product.ageCategory.split("-").map(Number);
+    if (!isNaN(searchNumber) && ageCategory.includes("-")) {
+      const [min, max] = ageCategory.split("-").map(Number);
       ageMatch = searchNumber >= min && searchNumber <= max;
-    } else if (!isNaN(searchNumber) && product.ageCategory === "20+") {
+    } else if (!isNaN(searchNumber) && ageCategory === "20+") {
       ageMatch = searchNumber >= 20;
     }
 
@@ -238,23 +255,29 @@ const ProductsPage = () => {
     return matchesType && matchesCategory && matchesSearch;
   });
 
+  // Group by ageCategory as before, but Toonland products (which have
+  // no ageCategory) get their own clearly-labeled group instead of
+  // falling into "unknown".
   const groupedProducts = filteredProducts
     .filter((product) => product.ageCategory !== "20+")
     .reduce((acc: Record<string, typeof products>, curr) => {
-      const key = curr.ageCategory || "unknown";
+      const key =
+        curr.type === ProductType.TOONLAND
+          ? TOONLAND_GROUP_LABEL
+          : curr.ageCategory || "unknown";
       if (!acc[key]) acc[key] = [];
       acc[key].push(curr);
       return acc;
     }, {});
 
   const products20Plus = products.filter((product) => {
+    const ageCategory = product.ageCategory || "";
+
     const titleMatch = product.title.toLowerCase().includes(searchLower);
-    const categoryMatch = product.ageCategory
-      .toLowerCase()
-      .includes(searchLower);
+    const categoryMatch = ageCategory.toLowerCase().includes(searchLower);
 
     const searchNumber = parseInt(searchLower);
-    const is20Plus = product.ageCategory === "20+";
+    const is20Plus = ageCategory === "20+";
     const ageMatch = !isNaN(searchNumber) && is20Plus && searchNumber >= 20;
 
     const matchesSearch =
@@ -354,13 +377,6 @@ const ProductsPage = () => {
               <FaTimes />
             </button>
           )}
-          {/* <button
-            onClick={() => setIsFilterOpen(!isFilterOpen)}
-            className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 md:hidden text-gray-600 hover:text-blue-600"
-            aria-label="Toggle filters"
-          >
-            <FaFilter className="w-4 sm:w-5 h-4 sm:h-5" />
-          </button> */}
         </div>
 
         <div className="flex gap-4 sm:gap-6 w-full max-w-full overflow-hidden">
@@ -372,7 +388,7 @@ const ProductsPage = () => {
                   isInView={true}
                   selectedCategory={category}
                   setSelectedCategory={handleSelectedCategory}
-                  className="py-2 grid w-full grid-cols-5 gap-2 mx-auto mt-8 sm:mt-10  md:gap-8  lg:gap-16"
+                  className="py-2 md:grid w-full grid-cols-5 hidden gap-2 mx-auto mt-8 sm:mt-10  md:gap-8  lg:gap-16"
                 />
               </div>
             )}

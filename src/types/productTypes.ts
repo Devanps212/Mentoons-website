@@ -30,6 +30,8 @@ export interface ProductBase {
   title: string;
   description?: string;
   price: number;
+  mrp?: number;
+  offerPrice?: number;
   orignalProductSrc?: string;
   ageCategory: AgeCategory;
   type: ProductType;
@@ -131,7 +133,7 @@ export interface AssessmentProduct extends ProductBase {
         imageUrl: string;
         options: string[];
         correctAnswer: string;
-      }
+      },
     ];
   };
 }

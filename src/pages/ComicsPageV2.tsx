@@ -37,17 +37,13 @@ interface DBUser {
 const ComicsPageV2 = () => {
   const { items: products } = useSelector((state: RootState) => state.products);
 
-  console.log("products in ComicsPageV2:", products);
-
   const { user } = useUser();
   const [isAtStart, setIsAtStart] = useState(true);
   const [isAtEnd, setIsAtEnd] = useState(false);
   const trendingCarouselRef = useRef<HTMLDivElement>(null);
   const [selectedComic, setSelectedComic] = useState<ProductBase>();
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [showComicModal, setShowComicModal] = useState(false);
   const [comicToView, setComicToView] = useState<string>("");
-  const [isPlaying, setIsPlaying] = useState(false);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const [productType, setProductType] = useState<string>("");
   const [isFetchingProducts, setIsFetchingProducts] = useState(false);
@@ -68,7 +64,7 @@ const ComicsPageV2 = () => {
 
   const [scrollProgress, setScrollProgress] = useState(0);
 
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const selectedOption = searchParams.get("option") || "comic";
 
   const membershipType = dbUser?.subscription.plan.toLowerCase() || "free";
@@ -87,11 +83,11 @@ const ComicsPageV2 = () => {
     return () => window.removeEventListener("scroll", handleScrollProgress);
   }, []);
 
-  const handleSelectedOption = (option: string) => {
-    setSearchParams({ option });
-    setCurrentIndex(0);
-    setIsPlaying(false);
-  };
+  // const handleSelectedOption = (option: string) => {
+  //   setSearchParams({ option });
+  //   setCurrentIndex(0);
+  //   setIsPlaying(false);
+  // };
 
   const handleScroll = () => {
     const carousel = trendingCarouselRef.current;
@@ -104,7 +100,6 @@ const ComicsPageV2 = () => {
   };
 
   const checkContentAccess = async (product: ProductBase): Promise<boolean> => {
-    console.log("Checking access for product:", product);
     if (!user) {
       setTimeout(() => setShowLoginModal(true), 100);
       return false;
@@ -286,15 +281,15 @@ const ComicsPageV2 = () => {
     }
   };
 
-  const pauseAllVideos = () => {
-    videoRefs.current.forEach((video) => {
-      if (video && !video.paused) {
-        video.pause();
-        video.currentTime = 0;
-      }
-    });
-    setIsPlaying(false);
-  };
+  // const pauseAllVideos = () => {
+  //   videoRefs.current.forEach((video) => {
+  //     if (video && !video.paused) {
+  //       video.pause();
+  //       video.currentTime = 0;
+  //     }
+  //   });
+  //   setIsPlaying(false);
+  // };
 
   useEffect(() => {
     const observers: IntersectionObserver[] = [];
@@ -306,7 +301,6 @@ const ComicsPageV2 = () => {
             if (!entry.isIntersecting) {
               video.pause();
               video.currentTime = 0;
-              setIsPlaying(false);
             }
           },
           { threshold: 0.5 },
@@ -319,7 +313,7 @@ const ComicsPageV2 = () => {
     return () => {
       observers.forEach((obs) => obs.disconnect());
     };
-  }, [products, currentIndex]);
+  }, [products]);
 
   useEffect(() => {
     const fetchComics = async () => {
@@ -359,7 +353,7 @@ const ComicsPageV2 = () => {
       <ComicHero />
 
       {/* Replaced motion.div with Tailwind animate-fade-in via CSS class */}
-      <div className="animate-fade-in">
+      {/* <div className="animate-fade-in">
         <h2 className="text-4xl font-bold text-center py-6 text-black">
           Re-Discover the <br /> Passion of Reading
         </h2>
@@ -386,10 +380,10 @@ const ComicsPageV2 = () => {
         <p className="pb-12 text-xs text-center text-gray-500">
           pdf format - download, print and your comic is ready!
         </p>
-      </div>
+      </div> */}
 
       {/* Replaced AnimatePresence + motion.div with Tailwind transitions */}
-      <div className="transition-opacity duration-300">
+      {/* <div className="transition-opacity duration-300">
         {selectedOption === "comic" ? (
           <div className="animate-fade-in w-[95%] md:w-[90%] mx-auto mb-16">
             {isFetchingProducts ? (
@@ -616,9 +610,7 @@ const ComicsPageV2 = () => {
             )}
           </div>
         )}
-      </div>
-
-      <ScrollTextSection />
+      </div> */}
 
       {/* Replaced motion.div (whileInView) with Tailwind scroll-animation class */}
       <div
@@ -788,6 +780,8 @@ const ComicsPageV2 = () => {
           <IoIosArrowForward className="text-2xl" />
         </button>
       </div>
+
+      <ScrollTextSection />
 
       {/* Comic modal — replaced motion.div with Tailwind animate-fade-in + scale */}
       {showComicModal && (
