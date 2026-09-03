@@ -69,7 +69,15 @@ const RING_COLORS = ["#FF4B3E", "#2EC4B6", "#6C5CE7", "#FFC93C"];
 const BURST_POINTS =
   "100,50 83.8,59.1 93.3,75 74.7,74.7 75,93.3 59.1,83.8 50,100 40.9,83.8 25,93.3 25.3,74.7 6.7,75 16.2,59.1 0,50 16.2,40.9 6.7,25 25.3,25.3 25,6.7 40.9,16.2 50,0 59.1,16.2 75,6.7 74.7,25.3 93.3,25 83.8,40.9";
 
-const Burst = ({ children, className = "", bg = "#FF4B3E" }) => (
+const Burst = ({
+  children,
+  className = "",
+  bg = "#FF4B3E",
+}: {
+  children: React.ReactNode;
+  className?: string;
+  bg?: string;
+}) => (
   <div className={`relative flex items-center justify-center ${className}`}>
     <svg
       viewBox="0 0 100 100"
@@ -671,19 +679,25 @@ const ToonlandProductPage = () => {
               onScroll={checkScrollPosition}
               className="flex py-16 overflow-x-scroll scrollbar-hide"
             >
-              {recommendedProducts?.length > 0 ? (
+              {recommendedLoading ? (
+                <div className="w-full p-8 text-center text-gray-400">
+                  Loading recommendations…
+                </div>
+              ) : recommendedError ? (
+                <div className="w-full p-8 text-center text-red-500">
+                  Couldn't load recommendations.
+                </div>
+              ) : recommendedProducts?.length > 0 ? (
                 recommendedProducts
                   .filter((item) => item.type === recommendationsFilter)
-                  .map((product) => {
-                    return (
-                      <div
-                        className="min-w-[400px] flex justify-center"
-                        key={product._id}
-                      >
-                        <ProductCard productDetails={product} />
-                      </div>
-                    );
-                  })
+                  .map((product) => (
+                    <div
+                      className="min-w-[400px] flex justify-center"
+                      key={product._id}
+                    >
+                      <ProductCard productDetails={product} />
+                    </div>
+                  ))
               ) : (
                 <div className="w-full p-8 text-center border border-gray-200 rounded-lg bg-gray-50">
                   <p className="text-lg font-medium text-gray-600">

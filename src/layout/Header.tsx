@@ -16,6 +16,13 @@ import ShareModal from "@/components/modals/ShareModal";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 
+const MENU_BASE_PATHS: Record<string, string> = {
+  games: "/mentoons-games",
+  products: "/products",
+  workshops: "/mentoons-workshops",
+  joinus: "/joinus",
+};
+
 const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -189,8 +196,22 @@ const Header = () => {
   const filteredNav = COMMON_NAV.filter(
     (item) => item.label !== "Profile" || userId,
   );
-  const navLeft = filteredNav.slice(0, 5);
-  const navRight = filteredNav.slice(5);
+  const navLeft = filteredNav.slice(0, 6);
+  const navRight = filteredNav.slice(6);
+
+  const isPathActive = (url: string) =>
+    location.pathname === url || location.pathname.startsWith(`${url}/`);
+
+  const isMenuActive = (menuKey: string) => {
+    const base = MENU_BASE_PATHS[menuKey];
+    if (!base) return false;
+    return isPathActive(base);
+  };
+
+  const handleMenuClick = (menuKey: string) => {
+    const base = MENU_BASE_PATHS[menuKey];
+    if (base) navigate(base);
+  };
 
   const handleBrowsePlansClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -318,18 +339,26 @@ const Header = () => {
                   key={id}
                   href={url}
                   onClick={handleBrowsePlansClick}
-                  className="group relative text-white flex items-center gap-2 text-sm lg:text-base font-semibold"
+                  className={`group relative flex items-center gap-2 text-sm lg:text-base font-semibold ${
+                    isPathActive(url) ? "text-yellow-300" : "text-white"
+                  }`}
                 >
                   {Icon && typeof Icon === "function" && (
                     <Icon className="w-5 h-5" />
                   )}
                   {label}
-                  <span className="absolute bottom-[-4px] left-0 h-[2px] w-0 bg-white transition-all group-hover:w-full" />
+                  <span
+                    className={`absolute bottom-[-4px] left-0 h-[2px] bg-white transition-all ${
+                      isPathActive(url) ? "w-full" : "w-0 group-hover:w-full"
+                    }`}
+                  />
                 </a>
               ) : items?.length ? (
                 <div key={id} className="relative">
                   <NavButton
                     label={label}
+                    active={isMenuActive(label.toLowerCase())}
+                    onClick={handleMenuClick}
                     onMouseEnter={() => handleHover(label.toLowerCase())}
                     onMouseLeave={() => handleMouseLeave(label.toLowerCase())}
                   >
@@ -347,13 +376,21 @@ const Header = () => {
                 <NavLink
                   key={id}
                   to={url}
-                  className="group relative text-white flex items-center gap-2 text-sm lg:text-base font-semibold"
+                  className={({ isActive }) =>
+                    `group relative flex items-center gap-2 text-sm lg:text-base font-semibold ${
+                      isActive ? "text-yellow-300" : "text-white"
+                    }`
+                  }
                 >
                   {Icon && typeof Icon === "function" && (
                     <Icon className="w-5 h-5" />
                   )}
                   {label}
-                  <span className="absolute bottom-[-4px] left-0 h-[2px] w-0 bg-white transition-all group-hover:w-full" />
+                  <span
+                    className={`absolute bottom-[-4px] left-0 h-[2px] bg-white transition-all ${
+                      isPathActive(url) ? "w-full" : "w-0 group-hover:w-full"
+                    }`}
+                  />
                 </NavLink>
               ),
             )}
@@ -385,8 +422,13 @@ const Header = () => {
           </motion.div>
 
           <SignedIn>
-            <NavLink to="/cart" className="relative">
-              <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            <NavLink
+              to="/cart"
+              className={({ isActive }) =>
+                `relative ${isActive ? "text-yellow-300" : "text-white"}`
+              }
+            >
+              <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6" />
               {(cart?.totalItemCount ?? 0) > 0 && (
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
                   {cart.totalItemCount}
@@ -427,13 +469,19 @@ const Header = () => {
                 key={id}
                 href={url}
                 onClick={handleBrowsePlansClick}
-                className="group relative text-white flex items-center gap-2 text-base font-semibold"
+                className={`group relative flex items-center gap-2 text-base font-semibold ${
+                  isPathActive(url) ? "text-yellow-300" : "text-white"
+                }`}
               >
                 {Icon && typeof Icon === "function" && (
                   <Icon className="w-5 h-5" />
                 )}
                 {label}
-                <span className="absolute bottom-[-4px] left-0 h-[2px] w-0 bg-white transition-all group-hover:w-full" />
+                <span
+                  className={`absolute bottom-[-4px] left-0 h-[2px] bg-white transition-all ${
+                    isPathActive(url) ? "w-full" : "w-0 group-hover:w-full"
+                  }`}
+                />
               </a>
             ) : label === "Share" ? (
               <div
@@ -457,7 +505,13 @@ const Header = () => {
                     whileHover={{ scale: 1.1 }}
                     className="cursor-pointer"
                   >
-                    <FaUserCircle className="w-7 h-7 text-white" />
+                    <FaUserCircle
+                      className={`w-7 h-7 ${
+                        isPathActive("/adda/user-profile")
+                          ? "text-yellow-300"
+                          : "text-white"
+                      }`}
+                    />
                   </motion.div>
 
                   <AnimatePresence>
@@ -491,6 +545,8 @@ const Header = () => {
               <div key={id} className="relative">
                 <NavButton
                   label={label}
+                  active={isMenuActive(label.toLowerCase())}
+                  onClick={handleMenuClick}
                   onMouseEnter={() => handleHover(label.toLowerCase())}
                   onMouseLeave={() => handleMouseLeave(label.toLowerCase())}
                 >
@@ -503,20 +559,33 @@ const Header = () => {
               <NavLink
                 key={id}
                 to={url}
-                className="group relative text-white flex items-center gap-2 text-base font-semibold"
+                className={({ isActive }) =>
+                  `group relative flex items-center gap-2 text-base font-semibold ${
+                    isActive ? "text-yellow-300" : "text-white"
+                  }`
+                }
               >
                 {Icon && typeof Icon === "function" && (
                   <Icon className="w-5 h-5" />
                 )}
                 {label}
-                <span className="absolute bottom-[-4px] left-0 h-[2px] w-0 bg-white transition-all group-hover:w-full" />
+                <span
+                  className={`absolute bottom-[-4px] left-0 h-[2px] bg-white transition-all ${
+                    isPathActive(url) ? "w-full" : "w-0 group-hover:w-full"
+                  }`}
+                />
               </NavLink>
             );
           })}
 
           <SignedIn>
-            <NavLink to="/cart" className="relative ml-6">
-              <ShoppingCart className="w-7 h-7 text-white" />
+            <NavLink
+              to="/cart"
+              className={({ isActive }) =>
+                `relative ml-6 ${isActive ? "text-yellow-300" : "text-white"}`
+              }
+            >
+              <ShoppingCart className="w-7 h-7" />
               {(cart?.totalItemCount ?? 0) > 0 && (
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
                   {cart.totalItemCount}

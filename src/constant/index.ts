@@ -746,31 +746,26 @@ export const FOOTER_PAGELINKS = [
       },
       {
         id: "AB_2",
-        label: "Free Downloads",
-        url: "/free-download",
-      },
-      {
-        id: "AB_3",
         label: "Help & FAQ's",
         url: "/faq",
       },
       {
-        id: "AB_5",
+        id: "AB_3",
         label: "Mentoons Privacy Policy",
         url: "/mentoons-privacy-policy",
       },
       {
-        id: "AB_6",
+        id: "AB_4",
         label: "Hiring",
         url: "/joinus/careers",
       },
       {
-        id: "AB_7",
+        id: "AB_5",
         label: "Explore",
         url: "/joinus/explore",
       },
       {
-        id: "AB_8",
+        id: "AB_6",
         label: "Feedback",
         url: "/feedback",
       },
@@ -798,13 +793,18 @@ export const FOOTER_PAGELINKS = [
       },
       {
         id: "S_4",
-        label: "Conversataion Story Cards",
+        label: "Conversation Story Cards",
         url: `/products?productType=${ProductType.MENTOONS_CARDS}&cardType=${CardType.CONVERSATION_STORY_CARDS}#product`,
       },
       {
         id: "S_5",
         label: "Coloring Books",
         url: `/products?productType=${ProductType.MENTOONS_COLORING_BOOKS}#product`,
+      },
+      {
+        id: "S_6",
+        label: "Free Downloads",
+        url: "/free-download",
       },
     ],
   },
@@ -972,18 +972,18 @@ export const EMPLOYEES = [
     designation: "Founder & CEO",
     imageUrl: "/assets/images/mahesh-sir.jpg",
   },
-  {
-    id: "EMP_2",
-    name: "Mahetalat",
-    designation: "Content Writer & Illustrator",
-    imageUrl: "/assets/images/mahetalat.jpg",
-  },
-  {
-    id: "EMP_3",
-    name: "Nupur",
-    designation: "UI/UX Designer",
-    imageUrl: "/assets/images/nupur.png",
-  },
+  // {
+  //   id: "EMP_2",
+  //   name: "Mahetalat",
+  //   designation: "Content Writer & Illustrator",
+  //   imageUrl: "/assets/images/mahetalat.jpg",
+  // },
+  // {
+  //   id: "EMP_3",
+  //   name: "Nupur",
+  //   designation: "UI/UX Designer",
+  //   imageUrl: "/assets/images/nupur.png",
+  // },
 
   {
     id: "EMP_4",
@@ -1201,7 +1201,7 @@ export const COMMON_NAV: NavLink[] = [
     id: "NL_03",
     label: "Products",
     // icon: FaShoppingCart,
-    url: "/mentoons-store",
+    url: "/products",
     items: [
       {
         id: "AC_01",
@@ -1263,6 +1263,11 @@ export const COMMON_NAV: NavLink[] = [
         url: "/workshop",
       },
     ],
+  },
+  {
+    id: "NL_012",
+    label: "Meetups",
+    url: "/meetups",
   },
   {
     id: "NL_07",

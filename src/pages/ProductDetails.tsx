@@ -16,7 +16,7 @@ import {
 } from "@/types/productTypes";
 import { RewardEventType } from "@/types/rewards";
 import { ModalMessage } from "@/utils/enum";
-import { formatDateString } from "@/utils/formateDate";
+// import { formatDateString } from "@/utils/formateDate";
 import { triggerReward } from "@/utils/rewardMiddleware";
 import { useAuth } from "@clerk/clerk-react";
 import axios from "axios";
@@ -39,6 +39,8 @@ import {
   WhatsappShareButton,
 } from "react-share";
 import { toast } from "sonner";
+
+type MediaItem = { type: "video" | "image"; url: string };
 
 const ProductDetails = () => {
   const { productId } = useParams();
@@ -81,17 +83,20 @@ const ProductDetails = () => {
 
   useEffect(() => {
     const fetchProduct = async () => {
+      console.log("fetching product");
       try {
         if (!productId) {
           toast.error("Product ID is missing");
           return;
         }
         const productResponse = await dispatch(fetchProductById(productId));
+        console.log("product response :", productResponse);
 
         if (
           typeof productResponse.payload === "object" &&
           productResponse.payload !== null
         ) {
+          console.log(productResponse.payload);
           setProduct(productResponse.payload as ProductBase);
           setRecommendationFilter(productResponse.payload?.type);
         } else {
@@ -225,20 +230,26 @@ const ProductDetails = () => {
     setSelectedImage(index);
   };
 
-  const navigateImage = (direction: "next" | "prev") => {
-    if (!product || !product.productImages) return;
+  const media: MediaItem[] = [
+    ...(product?.productVideos?.[0]?.videoUrl
+      ? [{ type: "video" as const, url: product.productVideos[0].videoUrl }]
+      : []),
+    ...(product?.productImages?.map((img) => ({
+      type: "image" as const,
+      url: img.imageUrl,
+    })) ?? []),
+  ];
 
-    const imagesLength = product.productImages.length;
+  const navigateImage = (direction: "next" | "prev") => {
+    if (!media.length) return;
+
     if (direction === "next") {
-      setSelectedImage((prev) => (prev + 1) % imagesLength);
+      setSelectedImage((prev) => (prev + 1) % media.length);
     } else {
-      setSelectedImage((prev) => (prev - 1 + imagesLength) % imagesLength);
+      setSelectedImage((prev) => (prev - 1 + media.length) % media.length);
     }
   };
 
-  // Pricing: `mrp` is the original listed price and `price` is what the
-  // customer actually pays. When mrp is set and higher than price, show
-  // the introductory-price badge and the struck-through mrp.
   const hasDiscount =
     product?.mrp !== undefined &&
     product?.mrp !== null &&
@@ -330,28 +341,28 @@ const ProductDetails = () => {
                   Free
                 </span>
               ) : (
-                <>
+                <div>
                   {hasDiscount && (
                     <span className="block text-xs font-semibold text-green-600 uppercase tracking-wide mb-1">
                       Introductory Price
                     </span>
                   )}
-                  <span className="flex items-baseline gap-2 flex-wrap">
-                    <span className="text-lg font-semibold text-neutral-800">
+                  <div className="flex items-baseline gap-2 flex-wrap">
+                    {hasDiscount && (
+                      <span className="text-lg text-gray-400 line-through">
+                        ₹ {product?.mrp}
+                      </span>
+                    )}
+                    <span className="text-2xl font-semibold text-neutral-800">
                       ₹ {product?.price}
                     </span>
                     {hasDiscount && (
-                      <>
-                        <span className="text-base text-gray-400 line-through">
-                          ₹ {product?.mrp}
-                        </span>
-                        <span className="text-sm font-bold text-green-600">
-                          {discountPercent}% OFF
-                        </span>
-                      </>
+                      <span className="text-sm font-bold text-green-600">
+                        {discountPercent}% OFF
+                      </span>
                     )}
-                  </span>
-                </>
+                  </div>
+                </div>
               )}
               {(product?.title === "Conversation Starter Cards (6-12) years" ||
                 product?.title === "Silent Stories (6-12) years") &&
@@ -364,7 +375,7 @@ const ProductDetails = () => {
                         : "https://mentoons-products.s3.ap-northeast-1.amazonaws.com/Products/freeDownloads/Silent+story+6-12+free.pdf"
                     }`}
                     download
-                    className="px-4 py-3 ml-4 text-white transition-all duration-200 bg-green-500 rounded-full hover:opacity-55"
+                    className="inline-block mt-3 px-4 py-3 text-white transition-all duration-200 bg-green-500 rounded-full hover:opacity-55"
                   >
                     Download Free Sample
                   </a>
@@ -477,7 +488,7 @@ const ProductDetails = () => {
             onMouseMove={handleMouseMove}
             onClick={() => setIsZoomed(!isZoomed)}
           >
-            {product?.productImages && product.productImages.length > 1 && (
+            {media.length > 1 && (
               <>
                 <button
                   className="absolute z-10 p-2 transform -translate-y-1/2 bg-white rounded-full shadow-md opacity-80 hover:opacity-100 left-2 top-1/2"
@@ -500,49 +511,69 @@ const ProductDetails = () => {
               </>
             )}
 
-            <div className="absolute z-10 p-1 bg-white rounded-full shadow-md opacity-80 top-2 right-2">
-              <ZoomIn className="w-4 h-4" />
-            </div>
-
-            <img
-              src={product?.productImages?.[selectedImage]?.imageUrl}
-              alt={product?.title || "Product image"}
-              className={`object-contain w-full h-full transition-transform duration-200 ${
-                isZoomed ? "scale-150" : ""
-              }`}
-              style={
-                isZoomed
-                  ? {
-                      transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
-                    }
-                  : {}
-              }
-            />
-          </div>
-
-          {product &&
-            product.productImages &&
-            product.productImages.length > 0 && (
-              <div className="flex justify-center mt-4 space-x-2 overflow-x-auto">
-                {product.productImages.map((image, index) => (
-                  <div
-                    key={`thumb-${index}`}
-                    className={`w-16 h-16 border-2 rounded cursor-pointer ${
-                      selectedImage === index
-                        ? "border-primary"
-                        : "border-transparent"
-                    } hover:border-primary transition-all`}
-                    onClick={() => handleThumbnailClick(index)}
-                  >
-                    <img
-                      src={image.imageUrl}
-                      alt={`${product.title} thumbnail ${index + 1}`}
-                      className="object-cover w-full h-full"
-                    />
-                  </div>
-                ))}
+            {media[selectedImage]?.type !== "video" && (
+              <div className="absolute z-10 p-1 bg-white rounded-full shadow-md opacity-80 top-2 right-2">
+                <ZoomIn className="w-4 h-4" />
               </div>
             )}
+
+            {media[selectedImage]?.type === "video" ? (
+              <video
+                src={media[selectedImage].url}
+                controls
+                autoPlay
+                muted
+                playsInline
+                className="object-contain w-full h-full"
+              />
+            ) : (
+              <img
+                src={media[selectedImage]?.url}
+                alt={product?.title || "Product image"}
+                className={`object-contain w-full h-full transition-transform duration-200 ${
+                  isZoomed ? "scale-150" : ""
+                }`}
+                style={
+                  isZoomed
+                    ? {
+                        transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
+                      }
+                    : {}
+                }
+              />
+            )}
+          </div>
+
+          {media.length > 0 && (
+            <div className="flex justify-center mt-4 space-x-2 overflow-x-auto">
+              {media.map((item, index) => (
+                <div
+                  key={`thumb-${index}`}
+                  className={`w-16 h-16 border-2 rounded cursor-pointer ${
+                    selectedImage === index
+                      ? "border-primary"
+                      : "border-transparent"
+                  } hover:border-primary transition-all`}
+                  onClick={() => handleThumbnailClick(index)}
+                >
+                  {item.type === "video" ? (
+                    <video
+                      src={item.url}
+                      muted
+                      playsInline
+                      className="object-cover w-full h-full"
+                    />
+                  ) : (
+                    <img
+                      src={item.url}
+                      alt={`${product?.title} thumbnail ${index + 1}`}
+                      className="object-cover w-full h-full"
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -559,7 +590,8 @@ const ProductDetails = () => {
                   product.type === ProductType.COMIC ||
                   product.type === ProductType.AUDIO_COMIC ||
                   product.type === ProductType.PODCAST ||
-                  product.type === ProductType.MENTOONS_BOOKS
+                  product.type === ProductType.MENTOONS_BOOKS ||
+                  product.type === ProductType.MENTOONS_CARDS
                     ? "language" in product.details
                       ? product.details.language === "en"
                         ? "English"
@@ -575,26 +607,32 @@ const ProductDetails = () => {
                     ? "pages" in product.details
                       ? `${product.details.pages || "Not Available"} pages`
                       : "Not Available"
-                    : "Not Available",
-              },
-              {
-                label: "Launch Date",
-                value:
-                  product.type === ProductType.COMIC ||
-                  product.type === ProductType.AUDIO_COMIC ||
-                  product.type === ProductType.PODCAST ||
-                  product.type === ProductType.MENTOONS_BOOKS
-                    ? "releaseDate" in product.details &&
-                      product.details.releaseDate
-                      ? formatDateString(product.details.releaseDate)
-                      : "Not Available"
-                    : product.type === ProductType.WORKSHOP
-                      ? "schedule" in product.details &&
-                        product.details.schedule
-                        ? formatDateString(product.details.schedule)
-                        : "Not Available"
+                    : product.type === ProductType.MENTOONS_CARDS
+                      ? "printLength" in product.details
+                        ? `${product.details.printLength} cards`
+                        : "pages" in product.details
+                          ? `${product.details.pages} cards`
+                          : "Not Available"
                       : "Not Available",
               },
+              // {
+              //   label: "Launch Date",
+              //   value:
+              //     product.type === ProductType.COMIC ||
+              //     product.type === ProductType.AUDIO_COMIC ||
+              //     product.type === ProductType.PODCAST ||
+              //     product.type === ProductType.MENTOONS_BOOKS
+              //       ? "releaseDate" in product.details &&
+              //         product.details.releaseDate
+              //         ? formatDateString(product.details.releaseDate)
+              //         : "Not Available"
+              //       : product.type === ProductType.WORKSHOP
+              //         ? "schedule" in product.details &&
+              //           product.details.schedule
+              //           ? formatDateString(product.details.schedule)
+              //           : "Not Available"
+              //         : "Not Available",
+              // },
               {
                 label: "Reading Age",
                 value: product.ageCategory || "Not Specified",

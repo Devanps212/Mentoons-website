@@ -14,11 +14,12 @@ import { Baby, Users } from "lucide-react";
 import { BiSolidMessage } from "react-icons/bi";
 import { toast } from "sonner";
 import axios from "axios";
-import { useAuth } from "@clerk/clerk-react";
 import { User } from "@/types";
 import EnquiryModal from "@/components/modals/EnquiryModal";
 import { ModalMessage } from "@/utils/enum";
 import ProductVideoShowCase from "@/components/Home/newVersion/productVideoShowcase";
+import { getUserDetails } from "@/api";
+import { useAsyncEffect } from "@/hooks/shared/useAsyncEffect";
 
 const quickLinks = [
   { label: "Workshops", url: "/mentoons-workshops" },
@@ -61,7 +62,6 @@ const NewLandingPage = () => {
   const [enquiryEmail, setEnquiryEmail] = useState("");
   const [enquiryName, setEnquiryName] = useState("");
   const [showEnquiryModal, setShowEnquiryModal] = useState(false);
-  const { getToken } = useAuth();
   const [user, setUser] = useState<null | User>(null);
 
   useEffect(() => {
@@ -72,28 +72,17 @@ const NewLandingPage = () => {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    const fetchUserDetails = async () => {
-      const token = await getToken();
-      if (!token) {
-        throw new Error("No token found");
-      }
-      const response = await axios.get(
-        `${import.meta.env.VITE_PROD_URL}/user/user/`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
+  useAsyncEffect(
+    async () => {
+      const response = await getUserDetails();
       if (response.status !== 200) {
         throw new Error("Failed to fetch user details");
       }
       setUser(response.data.data);
-    };
-    fetchUserDetails();
-  }, []);
+    },
+    [],
+    { showToast: false },
+  );
 
   const handleDoubtSubmission = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

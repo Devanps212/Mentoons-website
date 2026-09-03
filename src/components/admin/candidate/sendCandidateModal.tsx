@@ -24,10 +24,33 @@ interface SendEmailModalProps {
   isOpen: boolean;
   onClose: () => void;
   recipients: EmailRecipient[];
+  recipientType?: "candidate" | "jobApplication";
   onSent?: () => void;
 }
 
 type ModalStatus = "idle" | "sending" | "success" | "error";
+
+interface AttachedFile {
+  id: string;
+  file: File;
+  previewUrl?: string;
+  placedInBody: boolean;
+}
+
+interface SendEmailResult {
+  success: boolean;
+  testMode?: boolean;
+  message: string;
+  attachments?: { url: string; originalName: string; mimetype: string }[];
+  skipped: string[];
+  results: {
+    email: string;
+    deliveredTo: string;
+    sent: boolean;
+    messageId?: string;
+    error?: string;
+  }[];
+}
 
 const MAX_VISIBLE_RECIPIENTS = 5;
 const MAX_ATTACHMENT_SIZE = 5 * 1024 * 1024;
@@ -42,9 +65,6 @@ const ALLOWED_ATTACHMENT_TYPES = [
 const isAllowedFile = (file: File) =>
   ALLOWED_ATTACHMENT_TYPES.some((prefix) => file.type.startsWith(prefix));
 
-const hasImageAttachment = (files: File[]) =>
-  files.some((file) => file.type.startsWith("image/"));
-
 const buildDefaultBody = (recipients: EmailRecipient[]) => {
   const greeting =
     recipients.length === 1
@@ -53,28 +73,45 @@ const buildDefaultBody = (recipients: EmailRecipient[]) => {
   return `<p>${greeting},</p><p><br></p><p><br></p><p>Best regards,<br>Mentoons</p>`;
 };
 
+const fileChipHtml = (attachedFile: AttachedFile) => {
+  const { file, previewUrl, id } = attachedFile;
+
+  const removeBtn = `<button type="button" data-remove-attachment="${id}" contenteditable="false" style="position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:9999px;background:#111827;color:#fff;border:none;font-size:11px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;" aria-label="Remove attachment">✕</button>`;
+
+  if (file.type.startsWith("image/")) {
+    return `<span data-attachment-id="${id}" contenteditable="false" style="position:relative;display:inline-block;max-width:100%;margin:8px 4px 8px 0;vertical-align:top;"><img src="${previewUrl}" alt="${file.name}" style="max-width:100%;border-radius:6px;display:block;" />${removeBtn}</span>`;
+  }
+
+  return `<span data-attachment-id="${id}" contenteditable="false" style="position:relative;display:inline-flex;align-items:center;gap:6px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:8px;padding:6px 20px 6px 10px;font-size:12px;color:#374151;margin:4px 4px 4px 0;">📎 ${file.name}${removeBtn}</span>`;
+};
+
 const SendEmailModal = ({
   isOpen,
   onClose,
   recipients,
+  recipientType = "candidate",
   onSent,
 }: SendEmailModalProps) => {
   const [extraEmails, setExtraEmails] = useState<string[]>([]);
   const [emailInput, setEmailInput] = useState("");
   const [showAllRecipients, setShowAllRecipients] = useState(false);
   const [subject, setSubject] = useState("");
-  const [attachments, setAttachments] = useState<File[]>([]);
+  const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
   const [attachmentError, setAttachmentError] = useState("");
   const [activeFormats, setActiveFormats] = useState<Set<string>>(new Set());
   const [linkUrl, setLinkUrl] = useState("");
   const [linkUrlError, setLinkUrlError] = useState("");
+  const [isDraggingChip, setIsDraggingChip] = useState(false);
+  const [isDragOverEditor, setIsDragOverEditor] = useState(false);
 
   const [status, setStatus] = useState<ModalStatus>("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const [sendResult, setSendResult] = useState<SendEmailResult | null>(null);
 
   const editorRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const hasInitializedBody = useRef(false);
+  const dragFileIdRef = useRef<string | null>(null);
 
   if (isOpen && !hasInitializedBody.current && editorRef.current) {
     editorRef.current.innerHTML = buildDefaultBody(recipients);
@@ -94,7 +131,10 @@ const SendEmailModal = ({
   const hiddenCount = allRecipients.length - visibleRecipients.length;
 
   const canSend = allRecipients.length > 0 && status !== "sending";
-  const showLinkField = hasImageAttachment(attachments);
+  const showLinkField = attachedFiles.some((a) =>
+    a.file.type.startsWith("image/"),
+  );
+  const unplacedFiles = attachedFiles.filter((a) => !a.placedInBody);
 
   const syncActiveFormats = () => {
     const next = new Set<string>();
@@ -109,6 +149,33 @@ const SendEmailModal = ({
     editorRef.current?.focus();
     document.execCommand(command, false);
     syncActiveFormats();
+  };
+
+  const addFiles = (files: File[]) => {
+    const valid: AttachedFile[] = [];
+    let rejected = false;
+
+    for (const file of files) {
+      if (!isAllowedFile(file) || file.size > MAX_ATTACHMENT_SIZE) {
+        rejected = true;
+        continue;
+      }
+      valid.push({
+        id: `${file.name}-${file.size}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        file,
+        previewUrl: file.type.startsWith("image/")
+          ? URL.createObjectURL(file)
+          : undefined,
+        placedInBody: false,
+      });
+    }
+
+    setAttachmentError(
+      rejected
+        ? "Some files were skipped — only images, videos, PDF, and Word files under 5MB are allowed."
+        : "",
+    );
+    setAttachedFiles((prev) => [...prev, ...valid]);
   };
 
   const handleAddEmail = () => {
@@ -147,40 +214,106 @@ const SendEmailModal = ({
   const handleFilesSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     e.target.value = "";
-    if (files.length === 0) return;
-
-    const valid: File[] = [];
-    let rejected = false;
-
-    for (const file of files) {
-      if (!isAllowedFile(file)) {
-        rejected = true;
-        continue;
-      }
-      if (file.size > MAX_ATTACHMENT_SIZE) {
-        rejected = true;
-        continue;
-      }
-      valid.push(file);
-    }
-
-    setAttachmentError(
-      rejected
-        ? "Some files were skipped — only images, videos, PDF, and Word files under 5MB are allowed."
-        : "",
-    );
-    setAttachments((prev) => [...prev, ...valid]);
+    if (files.length > 0) addFiles(files);
   };
 
-  const removeAttachment = (index: number) => {
-    setAttachments((prev) => {
-      const next = prev.filter((_, i) => i !== index);
-      if (!hasImageAttachment(next)) {
-        setLinkUrl("");
-        setLinkUrlError("");
-      }
-      return next;
+  const markPlaced = (id: string, placed: boolean) => {
+    setAttachedFiles((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, placedInBody: placed } : a)),
+    );
+  };
+
+  const removeAttachment = (id: string) => {
+    setAttachedFiles((prev) => {
+      const target = prev.find((a) => a.id === id);
+      if (target?.previewUrl) URL.revokeObjectURL(target.previewUrl);
+      return prev.filter((a) => a.id !== id);
     });
+    if (editorRef.current) {
+      const el = editorRef.current.querySelector(
+        `[data-attachment-id="${id}"]`,
+      );
+      el?.remove();
+    }
+  };
+
+  const unplaceAttachment = (id: string) => {
+    if (editorRef.current) {
+      const el = editorRef.current.querySelector(
+        `[data-attachment-id="${id}"]`,
+      );
+      el?.remove();
+    }
+    markPlaced(id, false);
+  };
+
+  const handleEditorClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement;
+    const removeBtn = target.closest(
+      "[data-remove-attachment]",
+    ) as HTMLElement | null;
+    if (!removeBtn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const id = removeBtn.getAttribute("data-remove-attachment");
+    if (id) unplaceAttachment(id);
+  };
+
+  // Chip drag handlers — user drags a chip from the tray into the editor
+  const handleChipDragStart = (id: string) => (e: React.DragEvent) => {
+    dragFileIdRef.current = id;
+    setIsDraggingChip(true);
+    e.dataTransfer.effectAllowed = "copy";
+  };
+
+  const handleChipDragEnd = () => {
+    setIsDraggingChip(false);
+    setIsDragOverEditor(false);
+    dragFileIdRef.current = null;
+  };
+
+  const handleEditorDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+    setIsDragOverEditor(true);
+  };
+
+  const handleEditorDragLeave = () => {
+    setIsDragOverEditor(false);
+  };
+
+  const handleEditorDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOverEditor(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      addFiles(Array.from(e.dataTransfer.files));
+      return;
+    }
+
+    const id = dragFileIdRef.current;
+    if (!id || !editorRef.current) return;
+    const attachedFile = attachedFiles.find((a) => a.id === id);
+    if (!attachedFile) return;
+
+    editorRef.current.querySelector(`[data-attachment-id="${id}"]`)?.remove();
+
+    const range = document.caretRangeFromPoint
+      ? document.caretRangeFromPoint(e.clientX, e.clientY)
+      : null;
+
+    if (range) {
+      const fragment = range.createContextualFragment(
+        fileChipHtml(attachedFile),
+      );
+      range.insertNode(fragment);
+    } else {
+      editorRef.current.innerHTML += fileChipHtml(attachedFile);
+    }
+
+    markPlaced(id, true);
+    setIsDraggingChip(false);
+    dragFileIdRef.current = null;
   };
 
   const validateLinkUrl = (value: string) => {
@@ -189,7 +322,6 @@ const SendEmailModal = ({
       return true;
     }
     try {
-      // eslint-disable-next-line no-new
       new URL(value.trim());
       setLinkUrlError("");
       return true;
@@ -204,12 +336,16 @@ const SendEmailModal = ({
     setEmailInput("");
     setShowAllRecipients(false);
     setSubject("");
-    setAttachments([]);
+    for (const a of attachedFiles) {
+      if (a.previewUrl) URL.revokeObjectURL(a.previewUrl);
+    }
+    setAttachedFiles([]);
     setAttachmentError("");
     setLinkUrl("");
     setLinkUrlError("");
     setStatus("idle");
     setErrorMessage("");
+    setSendResult(null);
     hasInitializedBody.current = false;
   };
 
@@ -217,6 +353,15 @@ const SendEmailModal = ({
     if (status === "sending") return;
     resetState();
     onClose();
+  };
+
+  const getSendableBodyHtml = () => {
+    if (!editorRef.current) return "";
+    const clone = editorRef.current.cloneNode(true) as HTMLElement;
+    clone
+      .querySelectorAll("[data-remove-attachment]")
+      .forEach((btn) => btn.remove());
+    return clone.innerHTML;
   };
 
   const handleSend = async () => {
@@ -228,16 +373,25 @@ const SendEmailModal = ({
       const formData = new FormData();
       allRecipients.forEach((r) => formData.append("to[]", r.email));
       formData.append("subject", subject);
-      formData.append("body", editorRef.current?.innerHTML ?? "");
+      formData.append("body", getSendableBodyHtml());
+      formData.append("attachmentsPlaced", String(unplacedFiles.length === 0));
+      formData.append("recipientType", recipientType);
       if (linkUrl.trim()) {
         formData.append("linkUrl", linkUrl.trim());
       }
-      attachments.forEach((file) => formData.append("attachments", file));
 
-      await api.post("/candidate/send-email", formData, {
+      attachedFiles.forEach((a) => {
+        formData.append("attachments", a.file);
+        formData.append("attachmentIds[]", a.id);
+      });
+
+      const response = await api.post("/candidate/send-email", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
+      console.log("response from backend : ", response)
+
+      setSendResult(response.data as SendEmailResult);
       setStatus("success");
       onSent?.();
     } catch (error: any) {
@@ -369,7 +523,7 @@ const SendEmailModal = ({
             </div>
 
             <div className="rounded-lg border border-gray-300 overflow-hidden mt-4 focus-within:ring-2 focus-within:ring-yellow-400 focus-within:border-yellow-400">
-              <div className="flex items-center gap-1 p-2 bg-gray-50 border-b border-gray-200">
+              <div className="flex items-center gap-1 p-2 bg-gray-50 border-b border-gray-200 flex-wrap">
                 <button
                   type="button"
                   onClick={() => applyFormat("bold")}
@@ -431,33 +585,60 @@ const SendEmailModal = ({
                 suppressContentEditableWarning
                 onKeyUp={syncActiveFormats}
                 onMouseUp={syncActiveFormats}
-                data-placeholder="Write your message..."
-                className="w-full min-h-[180px] outline-none p-3 text-sm empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
+                onDragOver={handleEditorDragOver}
+                onDragLeave={handleEditorDragLeave}
+                onDrop={handleEditorDrop}
+                onClick={handleEditorClick}
+                data-placeholder="Write your message... drag a file below into the text to place it there"
+                className={`w-full min-h-[180px] outline-none p-3 text-sm empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 transition-colors ${
+                  isDragOverEditor
+                    ? "bg-yellow-50 ring-2 ring-inset ring-yellow-300"
+                    : ""
+                }`}
               />
 
-              {attachments.length > 0 && (
-                <div className="flex flex-wrap gap-2 p-2 border-t border-gray-200 bg-gray-50">
-                  {attachments.map((file, index) => (
-                    <div
-                      key={`${file.name}-${index}`}
-                      className="flex items-center gap-2 bg-white border border-gray-300 rounded-full pl-3 pr-1 py-1 text-xs text-gray-700"
-                    >
-                      <span className="max-w-[140px] truncate">
-                        {file.name}
-                      </span>
-                      <span className="text-gray-400">
-                        {(file.size / (1024 * 1024)).toFixed(1)}MB
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => removeAttachment(index)}
-                        className="p-0.5 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100"
-                        aria-label={`Remove ${file.name}`}
+              {unplacedFiles.length > 0 && (
+                <div className="p-2 border-t border-gray-200 bg-gray-50">
+                  <p className="text-[11px] text-gray-500 mb-1.5 px-1">
+                    Drag a file into your message to place it there — or leave
+                    it here and it'll be added to the end automatically.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {unplacedFiles.map((a) => (
+                      <div
+                        key={a.id}
+                        draggable
+                        onDragStart={handleChipDragStart(a.id)}
+                        onDragEnd={handleChipDragEnd}
+                        className={`flex items-center gap-2 bg-white border border-gray-300 rounded-full pl-1 pr-2 py-1 text-xs text-gray-700 cursor-grab active:cursor-grabbing select-none ${
+                          isDraggingChip ? "opacity-60" : ""
+                        }`}
                       >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ))}
+                        {a.previewUrl ? (
+                          <img
+                            src={a.previewUrl}
+                            alt={a.file.name}
+                            className="w-6 h-6 rounded-full object-cover"
+                          />
+                        ) : (
+                          <span className="w-6 h-6 flex items-center justify-center rounded-full bg-gray-100">
+                            📎
+                          </span>
+                        )}
+                        <span className="max-w-[120px] truncate">
+                          {a.file.name}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => removeAttachment(a.id)}
+                          className="p-0.5 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100"
+                          aria-label={`Remove ${a.file.name}`}
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -531,10 +712,41 @@ const SendEmailModal = ({
         )}
 
         {status === "success" && (
-          <div className="flex flex-col items-center py-10">
+          <div className="flex flex-col items-center py-10 px-2 text-center">
             <p className="text-sm font-semibold text-gray-700">
-              Email sent successfully!
+              {sendResult?.message || "Email sent successfully!"}
             </p>
+
+            {sendResult?.testMode && (
+              <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-md px-3 py-1.5 mt-3">
+                Test mode was on — all emails were redirected to the test inbox.
+              </p>
+            )}
+
+            {sendResult?.skipped && sendResult.skipped.length > 0 && (
+              <p className="text-xs text-gray-500 mt-3">
+                Skipped (unsubscribed): {sendResult.skipped.join(", ")}
+              </p>
+            )}
+
+            {sendResult?.results && sendResult.results.some((r) => !r.sent) && (
+              <div className="mt-3 text-left w-full max-w-sm">
+                <p className="text-xs font-semibold text-red-500 mb-1">
+                  Failed to send:
+                </p>
+                <ul className="text-xs text-gray-500 space-y-0.5">
+                  {sendResult.results
+                    .filter((r) => !r.sent)
+                    .map((r) => (
+                      <li key={r.email}>
+                        {r.email}
+                        {r.error ? ` — ${r.error}` : ""}
+                      </li>
+                    ))}
+                </ul>
+              </div>
+            )}
+
             <button
               onClick={handleClose}
               className="mt-5 px-5 py-2 text-sm rounded-md bg-gray-900 text-white font-semibold"

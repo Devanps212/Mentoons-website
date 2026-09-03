@@ -224,6 +224,7 @@ const OrderSummary: React.FC = () => {
 
     const discount = calculateDiscountFromPoints(redeemPoints);
     setAppliedDiscount(discount);
+    
     toast.success(`Discount of ₹${discount.toFixed(2)} applied`);
   };
 

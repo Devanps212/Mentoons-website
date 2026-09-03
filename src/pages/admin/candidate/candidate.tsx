@@ -520,9 +520,9 @@ const CandidateTable = () => {
         isOpen={isEmailModalOpen}
         onClose={() => setIsEmailModalOpen(false)}
         recipients={emailRecipients}
+        recipientType="candidate"
         onSent={() => {
           markEmailed(emailTargetIds);
-          setSelectedIds(new Set());
         }}
       />
     </div>

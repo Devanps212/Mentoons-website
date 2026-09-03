@@ -17,7 +17,7 @@ const RANGES: { key: RangeKey; label: string }[] = [
   { key: "all_time", label: "All time" },
 ];
 
-const rangeToDates = (range: RangeKey) => {
+const rangeToDates = (range: RangeKey): { startDate?: string; endDate?: string } => {
   const now = new Date();
   if (range === "all_time") return {};
 
@@ -31,11 +31,9 @@ const rangeToDates = (range: RangeKey) => {
     return { startDate: start.toISOString() };
   }
 
-  // this_year
   const start = new Date(now.getFullYear(), 0, 1);
   return { startDate: start.toISOString() };
 };
-
 const currency = new Intl.NumberFormat("en-IN", {
   style: "currency",
   currency: "INR",

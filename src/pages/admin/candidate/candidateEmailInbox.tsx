@@ -77,7 +77,7 @@ const CandidateEmailInbox = ({ onBack }: { onBack: () => void }) => {
     setIsLoadingThread(true);
     try {
       const { data } = await api.get(
-        `/candidate/emails?email=${encodeURIComponent(candidate.email)}`,
+        `/candidate/emails?candidateId=${candidate._id}`,
       );
       setEmails(data.data.emails || []);
     } catch (error) {

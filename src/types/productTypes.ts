@@ -69,7 +69,7 @@ export interface ComicProduct extends ProductBase {
     author?: string;
     publisher?: string;
     language?: string;
-    sampleUrl?: string | undefined; // URL to a sample comic page
+    sampleUrl?: string | undefined;
     releaseDate?: string;
     series?: string;
   };
@@ -154,7 +154,7 @@ export interface MerchandiseProduct extends ProductBase {
   };
 }
 
-export interface MentoonsCardProduct {
+export interface MentoonsCardProduct extends ProductBase {
   type: ProductType.MENTOONS_CARDS; // Updated to reflect the self-help card type
   details: {
     cardType:
@@ -163,6 +163,8 @@ export interface MentoonsCardProduct {
       | "silent stories"
       | "conversation story cards"; // Types of self-help cards
     accentColor?: string; // Color theme for the card
+    language: string; // Language of the card content
+    printLength: number; // Number of cards/pages in the set
     addressedIssues: {
       title: string;
       description: string;
@@ -172,10 +174,10 @@ export interface MentoonsCardProduct {
       label: string;
       descriptionList: { _id: string; description: string }[];
     }[];
-  }[];
+  };
 }
 
-export interface MentoonsBookProduct {
+export interface MentoonsBookProduct extends ProductBase {
   type: ProductType.MENTOONS_BOOKS;
   details: {
     pages: number;

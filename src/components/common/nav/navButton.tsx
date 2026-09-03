@@ -28,6 +28,7 @@ const NavButton = ({
   icon = false,
   className = "text-center text-[12px] sm:text-sm md:text-base font-semibold text-white",
   onClick,
+  active = false,
 }: {
   children?: React.ReactNode;
   label: string;
@@ -36,6 +37,7 @@ const NavButton = ({
   onMouseLeave?: (menu: string) => void;
   className?: string;
   onClick?: (menu: string) => void;
+  active?: boolean;
 }) => {
   const menuKey = label.toLowerCase();
 
@@ -44,10 +46,12 @@ const NavButton = ({
       className="relative"
       onMouseEnter={() => onMouseEnter?.(menuKey)}
       onMouseLeave={() => onMouseLeave?.(menuKey)}
-      onClick={() => onClick?.(menuKey)}
     >
       <button
-        className={`bg-transparent outline-none cursor-pointer ${className} group relative flex items-center gap-1 transition-all duration-300 ease-in-out hover:text-yellow-500`}
+        onClick={() => onClick?.(menuKey)}
+        className={`bg-transparent outline-none cursor-pointer ${className} group relative flex items-center gap-1 transition-all duration-300 ease-in-out hover:text-yellow-500 ${
+          active ? "text-yellow-500" : ""
+        }`}
       >
         {icon && <span className="hidden sm:block">{ICONS[menuKey]}</span>}
         {label}
@@ -56,8 +60,15 @@ const NavButton = ({
             Free
           </span>
         )}
-        <span className="absolute bottom-[-4px] left-0 h-[2px] w-0 bg-white transition-all duration-300 ease-in-out group-hover:w-full"></span>
+        <span
+          className={`absolute bottom-[-4px] left-0 h-[2px] bg-white transition-all duration-300 ease-in-out ${
+            active ? "w-full" : "w-0 group-hover:w-full"
+          }`}
+        ></span>
       </button>
+
+      <div className="absolute left-0 top-full h-3 w-full" />
+
       <AnimatePresence>{children}</AnimatePresence>
     </div>
   );

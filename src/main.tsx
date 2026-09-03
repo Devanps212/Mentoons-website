@@ -7,7 +7,7 @@ import "./index.css";
 import { store } from "./redux/store.ts";
 import { AuthModalProvider } from "./context/adda/authModalContext.tsx";
 import { StatusModalProvider } from "./context/adda/statusModalContext.tsx";
-import CustomCursor from "./components/common/customCursor/customCursor.tsx";
+// import CustomCursor from "./components/common/customCursor/customCursor.tsx";
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 import { gsap } from "gsap";
 import { Flip, ScrollTrigger, SplitText } from "gsap/all";
@@ -69,7 +69,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
             <AuthProvider>
               <App />
             </AuthProvider>
-            <CustomCursor />
+            {/* <CustomCursor /> */}
           </StatusModalProvider>
         </AuthModalProvider>
       </Provider>
