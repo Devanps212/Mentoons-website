@@ -73,6 +73,7 @@ const ProductVideoShowCase = () => {
   const navigate = useNavigate();
   const [hoveredId, setHoveredId] = useState<number | null>(null);
   const [durations, setDurations] = useState<Record<number, number>>({});
+  const [loadedIds, setLoadedIds] = useState<Record<number, boolean>>({});
   const [activeVideo, setActiveVideo] = useState<Video | null>(null);
   const modalVideoRef = useRef<HTMLVideoElement>(null);
   const [mounted, setMounted] = useState(false);
@@ -87,12 +88,11 @@ const ProductVideoShowCase = () => {
       setDurations((prev) =>
         prev[id] === duration ? prev : { ...prev, [id]: duration },
       );
+      setLoadedIds((prev) => (prev[id] ? prev : { ...prev, [id]: true }));
     },
     [],
   );
 
-  // Ensure document.body exists before we try to portal into it
-  // (guards against SSR / hydration mismatches)
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -173,15 +173,29 @@ const ProductVideoShowCase = () => {
         </button>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 sm:auto-rows-[140px] gap-5 lg:gap-6">
+      <div className="grid grid-cols-2 auto-rows-[160px] sm:grid-cols-4 sm:auto-rows-[140px] gap-5 lg:gap-6">
         {VIDEOS.map((video) => (
           <button
             key={video.id}
+            type="button"
             onClick={() => setActiveVideo(video)}
             onMouseEnter={() => setHoveredId(video.id)}
             onMouseLeave={() => setHoveredId(null)}
             className={`relative text-left group rounded-2xl overflow-hidden shadow-md border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 bg-orange-100 ${video.span}`}
           >
+            {/* Loading placeholder shown until the video's first frame is ready */}
+            {!loadedIds[video.id] && (
+              <div className="absolute inset-0 flex items-center justify-center bg-orange-100 animate-pulse">
+                <svg
+                  viewBox="0 0 24 24"
+                  className="w-8 h-8 fill-orange-300"
+                  aria-hidden="true"
+                >
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </div>
+            )}
+
             <video
               src={video.videoUrl}
               className="absolute inset-0 w-full h-full object-cover"
@@ -189,6 +203,11 @@ const ProductVideoShowCase = () => {
               muted
               playsInline
               onLoadedMetadata={(e) => handleLoadedMetadata(video.id, e)}
+              onLoadedData={() =>
+                setLoadedIds((prev) =>
+                  prev[video.id] ? prev : { ...prev, [video.id]: true },
+                )
+              }
             />
 
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />

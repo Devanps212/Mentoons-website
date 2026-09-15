@@ -1,5 +1,6 @@
 import { CheckIcon } from "lucide-react";
-import { useRef, useState } from "react";
+import gsap from "gsap";
+import { useEffect, useRef, useState } from "react";
 
 const workshops = [
   {
@@ -123,8 +124,27 @@ const stars = [
   { top: "3%", left: "58%", size: 3, duration: 2.7, delay: 0.5 },
 ];
 
+const taglineWords = ["Creative", "•", "Engaging", "•", "Empowering workshops"];
+
+const splitToChars = (text: string) =>
+  text.split("").map((char) => (char === " " ? "\u00A0" : char));
+
+const splitToWords = (text: string) => text.split(" ");
+
 const NewBanner = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const rocketRef = useRef<HTMLDivElement>(null);
+  const badgeRef = useRef<HTMLDivElement>(null);
+  const badgeSubRef = useRef<HTMLDivElement>(null);
+  const headingLine1Ref = useRef<HTMLSpanElement>(null);
+  const headingLine2Ref = useRef<HTMLSpanElement>(null);
+  const taglineRef = useRef<HTMLDivElement>(null);
+  const descriptionRef = useRef<HTMLParagraphElement>(null);
+  const chipRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const cardsRef = useRef<HTMLDivElement>(null);
+  const highlightsRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
   const handleScroll = () => {
@@ -150,8 +170,225 @@ const NewBanner = () => {
     setActiveIndex(index);
   };
 
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+
+      tl.fromTo(
+        badgeRef.current,
+        { scale: 0, rotate: -35, opacity: 0 },
+        { scale: 1, rotate: 0, opacity: 1, duration: 0.7, ease: "back.out(2)" },
+      )
+        .fromTo(
+          badgeSubRef.current,
+          { x: -30, opacity: 0 },
+          { x: 0, opacity: 1, duration: 0.5 },
+          "-=0.35",
+        )
+        .fromTo(
+          headingLine1Ref.current?.querySelectorAll(".char") ?? [],
+          { y: 60, opacity: 0, rotateX: -90 },
+          {
+            y: 0,
+            opacity: 1,
+            rotateX: 0,
+            duration: 0.7,
+            stagger: 0.045,
+            ease: "back.out(1.7)",
+          },
+          "-=0.2",
+        )
+        .fromTo(
+          headingLine2Ref.current?.querySelectorAll(".word") ?? [],
+          { x: -40, opacity: 0 },
+          { x: 0, opacity: 1, duration: 0.5, stagger: 0.08 },
+          "-=0.3",
+        )
+        .fromTo(
+          taglineRef.current?.querySelectorAll(".tagline-word") ?? [],
+          { y: 20, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.45, stagger: 0.08 },
+          "-=0.2",
+        )
+        .fromTo(
+          descriptionRef.current,
+          { opacity: 0, filter: "blur(6px)", y: 12 },
+          { opacity: 1, filter: "blur(0px)", y: 0, duration: 0.6 },
+          "-=0.15",
+        )
+        .fromTo(
+          chipRef.current,
+          { scale: 0.6, opacity: 0 },
+          { scale: 1, opacity: 1, duration: 0.5, ease: "elastic.out(1,0.6)" },
+          "-=0.1",
+        )
+        .fromTo(
+          buttonRef.current,
+          { y: 25, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.5, ease: "back.out(2)" },
+          "-=0.2",
+        )
+        .fromTo(
+          cardsRef.current?.children ?? [],
+          { y: 50, opacity: 0, scale: 0.85, rotate: -4 },
+          {
+            y: 0,
+            opacity: 1,
+            scale: 1,
+            rotate: 0,
+            duration: 0.55,
+            stagger: 0.09,
+            ease: "back.out(1.6)",
+          },
+          "-=0.3",
+        )
+        .fromTo(
+          highlightsRef.current?.children ?? [],
+          { x: 30, opacity: 0 },
+          { x: 0, opacity: 1, duration: 0.4, stagger: 0.08 },
+          "-=0.2",
+        );
+
+      const loopStart = tl.duration() + 0.15;
+
+      if (rocketRef.current) {
+        gsap.to(rocketRef.current, {
+          y: -10,
+          rotate: 8,
+          duration: 1.1,
+          ease: "sine.inOut",
+          repeat: -1,
+          yoyo: true,
+          delay: loopStart,
+        });
+      }
+
+      if (badgeSubRef.current) {
+        gsap.to(badgeSubRef.current, {
+          scale: 1.06,
+          duration: 0.8,
+          ease: "sine.inOut",
+          repeat: -1,
+          yoyo: true,
+          delay: loopStart,
+        });
+      }
+
+      const headingChars = headingLine1Ref.current?.querySelectorAll(".char");
+      if (headingChars && headingChars.length) {
+        gsap.to(headingChars, {
+          y: -14,
+          rotate: 6,
+          scale: 1.08,
+          duration: 0.6,
+          ease: "sine.inOut",
+          stagger: {
+            each: 0.09,
+            repeat: -1,
+            yoyo: true,
+          },
+          delay: loopStart,
+        });
+      }
+
+      const line2Words = headingLine2Ref.current?.querySelectorAll(".word");
+      if (line2Words && line2Words.length) {
+        gsap.to(line2Words, {
+          y: -8,
+          rotate: -4,
+          duration: 0.9,
+          ease: "sine.inOut",
+          stagger: {
+            each: 0.15,
+            repeat: -1,
+            yoyo: true,
+          },
+          delay: loopStart,
+        });
+      }
+
+      const taglineWordsEls =
+        taglineRef.current?.querySelectorAll(".tagline-word");
+      if (taglineWordsEls && taglineWordsEls.length) {
+        gsap.to(taglineWordsEls, {
+          y: -6,
+          scale: 1.12,
+          duration: 0.7,
+          ease: "sine.inOut",
+          stagger: {
+            each: 0.12,
+            repeat: -1,
+            yoyo: true,
+          },
+          delay: loopStart,
+        });
+      }
+
+      if (chipRef.current) {
+        gsap.to(chipRef.current, {
+          rotate: 4,
+          duration: 0.5,
+          ease: "sine.inOut",
+          repeat: -1,
+          yoyo: true,
+          delay: loopStart,
+        });
+      }
+
+      if (buttonRef.current) {
+        gsap.to(buttonRef.current, {
+          scale: 1.05,
+          duration: 0.9,
+          ease: "sine.inOut",
+          repeat: -1,
+          yoyo: true,
+          delay: loopStart,
+        });
+      }
+
+      const cardTitles =
+        cardsRef.current?.querySelectorAll(".card-title .char");
+      if (cardTitles && cardTitles.length) {
+        gsap.to(cardTitles, {
+          y: -5,
+          duration: 0.55,
+          ease: "sine.inOut",
+          stagger: {
+            each: 0.045,
+            repeat: -1,
+            yoyo: true,
+            from: "start",
+          },
+          delay: loopStart,
+        });
+      }
+
+      const highlightSpans = highlightsRef.current?.querySelectorAll(
+        "span.highlight-text",
+      );
+      if (highlightSpans && highlightSpans.length) {
+        gsap.to(highlightSpans, {
+          y: -4,
+          duration: 0.6,
+          ease: "sine.inOut",
+          stagger: {
+            each: 0.2,
+            repeat: -1,
+            yoyo: true,
+          },
+          delay: loopStart,
+        });
+      }
+    }, rootRef);
+
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <div className="relative flex flex-col lg:flex-row items-start justify-start p-4 sm:p-5 bg-gradient-to-b from-blue-300 via-blue-200 to-white/20 min-h-screen lg:h-screen overflow-x-hidden overflow-y-auto lg:overflow-hidden">
+    <div
+      ref={rootRef}
+      className="relative flex flex-col lg:flex-row items-start justify-start p-4 sm:p-5 bg-gradient-to-b from-blue-300 via-blue-200 to-white/20 min-h-screen lg:h-screen overflow-x-hidden overflow-y-auto lg:overflow-hidden"
+    >
       <style>{`
         @keyframes drift-cloud {
           0%   { transform: scale(var(--cloud-scale)) translateX(0); }
@@ -199,6 +436,10 @@ const NewBanner = () => {
         .no-scrollbar::-webkit-scrollbar {
           display: none;
         }
+        .char, .word {
+          display: inline-block;
+          will-change: transform;
+        }
       `}</style>
 
       <div className="absolute inset-0 z-[1] overflow-hidden pointer-events-none">
@@ -235,37 +476,67 @@ const NewBanner = () => {
 
       <div className="w-full lg:w-[450px] flex flex-col items-start justify-start z-10">
         <div className="flex items-center justify-start">
-          <span className="p-3 rounded-full text-3xl sm:text-4xl font-bold text-white">
-            🚀
-          </span>
-          <span className="p-2 sm:p-3 rounded-full text-base sm:text-lg font-bold bg-blue-700 text-white">
+          <div
+            ref={rocketRef}
+            className="p-3 rounded-full text-3xl sm:text-4xl font-bold text-white"
+          >
+            <div ref={badgeRef}>🚀</div>
+          </div>
+          <div
+            ref={badgeSubRef}
+            className="p-2 sm:p-3 rounded-full text-base sm:text-lg font-bold bg-blue-700 text-white"
+          >
             New Launch
-          </span>
+          </div>
         </div>
-        <h3 className="text-2xl sm:text-3xl font-bold">
-          <span className="text-red-500">Mentoons</span> Live{" "}
-        </h3>
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold">
-          <span className="text-orange-500 text-4xl sm:text-5xl lg:text-6xl">
-            Workshops
+        <h1
+          className="text-3xl sm:text-4xl lg:text-5xl font-bold"
+          style={{ perspective: "600px" }}
+        >
+          <span
+            ref={headingLine1Ref}
+            className="text-orange-500 text-4xl sm:text-5xl lg:text-6xl inline-block"
+          >
+            {splitToChars("Workshops").map((char, index) => (
+              <span key={index} className="char">
+                {char}
+              </span>
+            ))}
           </span>{" "}
-          <br /> for Young Minds
+          <br />
+          <span ref={headingLine2Ref} className="inline-block">
+            {splitToWords("for Young Minds").map((word, index) => (
+              <span key={index} className="word mr-2">
+                {word}
+              </span>
+            ))}
+          </span>
         </h1>
-        <div className="flex flex-wrap items-center justify-start text-sm sm:text-md font-semibold mt-4">
-          <span>Creative</span>
-          <span className="mx-4">•</span>
-          <span>Engaging</span>
-          <span className="mx-4">•</span>
-          <span>Empowering workshops</span>
+        <div
+          ref={taglineRef}
+          className="flex flex-wrap items-center justify-start text-sm sm:text-md font-semibold mt-4"
+        >
+          {taglineWords.map((word, index) => (
+            <span
+              key={index}
+              className="tagline-word mx-1 first:ml-0 inline-block"
+            >
+              {word}
+            </span>
+          ))}
         </div>
-        <p className="text-base sm:text-lg text-gray-900 mt-2">
+        <p
+          ref={descriptionRef}
+          className="text-base sm:text-lg text-gray-900 mt-2"
+        >
           Kick start your learning journey with our exciting hands-on workshops
         </p>
 
         <div className="flex flex-wrap items-center justify-start gap-3">
-          {["Psychologists Driven", "Fun & Interactive"].map((item, index) => (
+          {["Fun & Interactive"].map((item, index) => (
             <div
               key={index}
+              ref={chipRef}
               className="flex items-center gap-2 p-2 px-4 rounded-full bg-blue-700 text-white font-semibold mt-4 cursor-pointer hover:bg-blue-800 transition-all duration-300"
             >
               <span>
@@ -277,6 +548,7 @@ const NewBanner = () => {
         </div>
 
         <button
+          ref={buttonRef}
           onClick={() => {
             window.location.href = "/mentoons-workshops";
           }}
@@ -295,79 +567,75 @@ const NewBanner = () => {
       </div>
 
       <div className="w-full flex-1 flex flex-col items-start justify-start relative z-10">
-        <div className="w-full flex justify-center">
-          <img
-            src="/assets/home/banner/new banner/launch offer.png"
-            alt="Workshop"
-            className="w-2/5 sm:w-1/3 lg:w-1/5 h-auto object-contain"
-          />
+        <div className="w-full flex justify-center mt-2">
+          <span className="bg-yellow-100 text-black font-bold text-xs sm:text-sm px-4 py-2 rounded-full shadow-sm text-center">
+            Crafted and designed especially for Gen A to Z
+          </span>
         </div>
 
-        {/* Workshop cards: horizontally slidable (snap-scroll) on mobile/tablet, static row on desktop */}
         <div
           ref={scrollRef}
           onScroll={handleScroll}
           className="w-full flex flex-nowrap lg:flex-wrap overflow-x-auto lg:overflow-visible snap-x snap-mandatory lg:snap-none no-scrollbar items-start justify-start lg:justify-center gap-3 mt-4 px-1 pb-4 xl:pr-20"
         >
-          {workshops.map((workshop, index) => (
-            <div
-              key={index}
-              className="group relative w-28 sm:w-32 lg:w-40 flex-shrink-0 snap-center rounded-xl lg:group-hover:rounded-b-none p-2 px-3 pb-3 bg-white transition-all duration-300 hover:z-40 lg:hover:shadow-2xl lg:hover:rounded-b-none"
-            >
-              <h1
-                className={`text-xs sm:text-sm font-bold text-center truncate mb-3 ${workshop.color}`}
-              >
-                {workshop.title}
-              </h1>
-
-              {/* Image: on mobile/tablet, tapping it navigates straight to the workshop link
-                  instead of relying on hover (which doesn't really exist on touch). On lg+,
-                  the hover-reveal panel below still works as before. */}
+          <div ref={cardsRef} className="contents">
+            {workshops.map((workshop, index) => (
               <div
-                onClick={() => {
-                  window.location.href = workshop.link;
-                }}
-                role="button"
-                tabIndex={0}
-                aria-label={`Go to ${workshop.title}`}
-                className="relative w-full h-32 sm:h-40 lg:h-48 bg-gray-50 rounded-tl-3xl rounded-br-3xl rounded-tr-md rounded-bl-md overflow-hidden cursor-pointer lg:cursor-default"
+                key={index}
+                className="group relative w-28 sm:w-32 lg:w-40 flex-shrink-0 snap-center rounded-xl lg:group-hover:rounded-b-none p-2 px-3 pb-3 bg-white transition-all duration-300 hover:z-40 lg:hover:shadow-2xl lg:hover:rounded-b-none"
               >
-                <img
-                  src={workshop.image}
-                  alt={workshop.title}
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
-              </div>
+                <h1
+                  className={`card-title text-xs sm:text-sm font-bold text-center truncate mb-3 ${workshop.color}`}
+                >
+                  {splitToChars(workshop.title).map((char, charIndex) => (
+                    <span key={charIndex} className="char">
+                      {char}
+                    </span>
+                  ))}
+                </h1>
 
-              {/* Icon badge: only fades out on hover at lg+ so it never disappears on mobile taps */}
-              <div className="absolute right-0 bottom-0 rounded-2xl w-10 h-10 sm:w-14 sm:h-14 bg-white lg:group-hover:opacity-0 transition-opacity duration-200">
-                <img
-                  src={workshop.icon}
-                  alt={workshop.title}
-                  className="w-full h-full object-contain rounded-full"
-                />
-              </div>
-
-              {/* Description/EXPLORE overlay: desktop-only hover reveal */}
-              <div className="hidden lg:flex absolute top-full left-0 right-0 -mt-px bg-white rounded-b-xl px-3 max-h-0 lg:group-hover:max-h-40 opacity-0 lg:group-hover:opacity-100 overflow-hidden transition-all duration-300 flex-col items-center gap-2 shadow-2xl">
-                <p className="text-xs text-gray-700 text-center leading-snug pt-2">
-                  {workshop.description}
-                </p>
-                <button
+                <div
                   onClick={() => {
                     window.location.href = workshop.link;
                   }}
-                  className="px-5 py-1.5 mb-2 rounded-full bg-gradient-to-b from-orange-400 to-orange-500 text-white font-extrabold text-xs tracking-wide shadow-[0_3px_0_0_#c2540f] active:translate-y-0.5 active:shadow-[0_1px_0_0_#c2540f] transition-all duration-100 hover:brightness-105"
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Go to ${workshop.title}`}
+                  className="relative w-full h-32 sm:h-40 lg:h-48 bg-gray-50 rounded-tl-3xl rounded-br-3xl rounded-tr-md rounded-bl-md overflow-hidden cursor-pointer lg:cursor-default"
                 >
-                  EXPLORE
-                </button>
+                  <img
+                    src={workshop.image}
+                    alt={workshop.title}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                </div>
+
+                <div className="absolute right-0 bottom-0 rounded-2xl w-10 h-10 sm:w-14 sm:h-14 bg-white lg:group-hover:opacity-0 transition-opacity duration-200">
+                  <img
+                    src={workshop.icon}
+                    alt={workshop.title}
+                    className="w-full h-full object-contain rounded-full"
+                  />
+                </div>
+
+                <div className="hidden lg:flex absolute top-full left-0 right-0 -mt-px bg-white rounded-b-xl px-3 max-h-0 lg:group-hover:max-h-40 opacity-0 lg:group-hover:opacity-100 overflow-hidden transition-all duration-300 flex-col items-center gap-2 shadow-2xl">
+                  <p className="text-xs text-gray-700 text-center leading-snug pt-2">
+                    {workshop.description}
+                  </p>
+                  <button
+                    onClick={() => {
+                      window.location.href = workshop.link;
+                    }}
+                    className="px-5 py-1.5 mb-2 rounded-full bg-gradient-to-b from-orange-400 to-orange-500 text-white font-extrabold text-xs tracking-wide shadow-[0_3px_0_0_#c2540f] active:translate-y-0.5 active:shadow-[0_1px_0_0_#c2540f] transition-all duration-100 hover:brightness-105"
+                  >
+                    EXPLORE
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
-        {/* Carousel dots — mobile/tablet only. Pushed down with mt-8 (was mt-3) plus the
-            scroll row's own pb-4 so the dots sit clearly below the cards instead of overlapping them. */}
         <div className="flex lg:hidden w-full items-center justify-center gap-2 mt-8">
           {workshops.map((workshop, index) => (
             <button
@@ -381,17 +649,27 @@ const NewBanner = () => {
             />
           ))}
         </div>
+
+        <div className="w-full flex justify-center mt-4">
+          <img
+            src="/assets/LandingPage/psyco.png"
+            alt="Psychologist Verified"
+            className="w-48 h-48 sm:w-64 sm:h-64 lg:w-80 lg:h-80 object-contain"
+          />
+        </div>
       </div>
 
-      {/* Highlights bar: hidden below lg, visible (block) at lg and above */}
       <div className="hidden lg:relative mt-6 z-30 w-full sm:w-[92%] max-w-6xl mx-auto">
-        <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 lg:gap-10 bg-white rounded-2xl sm:rounded-full px-4 sm:px-8 py-3 sm:py-4 shadow-lg">
+        <div
+          ref={highlightsRef}
+          className="flex flex-wrap items-center justify-center gap-4 md:gap-6 lg:gap-10 bg-white rounded-2xl sm:rounded-full px-4 sm:px-8 py-3 sm:py-4 shadow-lg"
+        >
           {highlights.map((item, index) => (
             <div
               key={index}
               className="flex items-center gap-4 md:gap-6 lg:gap-10"
             >
-              <span className="text-green-800 font-extrabold text-xs sm:text-sm md:text-base whitespace-nowrap">
+              <span className="highlight-text inline-block text-green-800 font-extrabold text-xs sm:text-sm md:text-base whitespace-nowrap">
                 {item}
               </span>
               {index < highlights.length - 1 && (

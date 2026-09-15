@@ -106,7 +106,7 @@ const Header = () => {
 
       gsap.set(headerLogo, { opacity: 0 });
 
-      const chars = text.querySelectorAll("span");
+      const chars = text.querySelectorAll("span > span");
 
       const tl = gsap.timeline({
         defaults: { ease: "power3.out" },
@@ -305,7 +305,7 @@ const Header = () => {
         <div ref={splashLogoRef}>
           <img
             src="/assets/common/logo/ec9141ccd046aff5a1ffb4fe60f79316.png"
-            alt="Mentooons Logo"
+            alt="Mentoons Logo"
             className="w-64 sm:w-80 md:w-96 lg:w-[28rem]"
           />
         </div>
@@ -314,13 +314,21 @@ const Header = () => {
           ref={textRef}
           className="text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-center px-6 mt-8"
         >
-          {"Welcome to Mentooons".split("").map((char, i) => (
+          {"Welcome to Mentoons".split(" ").map((word, wordIndex) => (
             <span
-              key={i}
-              className="inline-block"
-              style={{ display: "inline-block" }}
+              key={wordIndex}
+              className="inline-block whitespace-nowrap"
+              style={{ marginRight: "0.3em" }}
             >
-              {char === " " ? "\u00A0" : char}
+              {word.split("").map((char, charIndex) => (
+                <span
+                  key={charIndex}
+                  className="inline-block"
+                  style={{ display: "inline-block" }}
+                >
+                  {char}
+                </span>
+              ))}
             </span>
           ))}
         </div>
@@ -332,7 +340,7 @@ const Header = () => {
         } flex justify-between items-center bg-primary h-16 px-4 sm:px-6 lg:px-10 transition-all duration-300 z-40 w-full font-akshar`}
       >
         <div className="flex items-center lg:w-1/3">
-          <nav className="hidden lg:flex gap-6 xl:gap-8">
+          <nav className="hidden xl:flex gap-6 xl:gap-8">
             {navLeft.map(({ id, label, url, icon: Icon, items }) =>
               label === "Browse Plans" ? (
                 <a
@@ -411,7 +419,7 @@ const Header = () => {
           </NavLink>
         </div>
 
-        <div className="flex items-center gap-4 lg:hidden">
+        <div className="flex items-center gap-4 xl:hidden">
           <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
             <div
               onClick={handleSearchToggle}
@@ -450,7 +458,7 @@ const Header = () => {
           </motion.div>
         </div>
 
-        <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
+        <nav className="hidden xl:flex items-center gap-6 xl:gap-8">
           <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
             <div
               onClick={handleSearchToggle}

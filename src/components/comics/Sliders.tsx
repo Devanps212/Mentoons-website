@@ -18,13 +18,9 @@ import { EMPLOYEES } from "@/constant";
 import { motion } from "framer-motion";
 import React from "react";
 import { FaRegStarHalfStroke, FaStar } from "react-icons/fa6";
-// @ts-expect-error -- CSS imports are handled by the bundler.
 import "swiper/css";
-// @ts-expect-error -- CSS imports are handled by the bundler.
 import "swiper/css/navigation";
-// @ts-expect-error -- CSS imports are handled by the bundler.
 import "swiper/css/pagination";
-// @ts-expect-error -- CSS imports are handled by the bundler.
 import "swiper/css/scrollbar";
 
 const TestimonialsSlider: React.FC = () => {

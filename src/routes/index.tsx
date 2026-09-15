@@ -1,6 +1,5 @@
 import { lazy } from "react";
 import OrderSummary from "@/components/OrderSummary";
-import AboutMentoons from "../pages/AboutMentoons";
 import Membership from "../components/LandingPage/membership/membership.tsx";
 import LogIn from "../pages/Auth/LogIn";
 import Register from "../pages/Auth/Register";
@@ -45,7 +44,9 @@ import DailyReport from "../components/employee/report/dailyReport.tsx";
 import OtherProduct from "../pages/otherProducts/OtherProduct";
 import ToonlandProductPage from "../pages/v2/user/products/toonlandProduct.tsx";
 import LetsRevive from "../components/community/letsRevive/letsRevive.tsx";
-import NewBanner from "../pages/NewBanner.tsx";
+import NewHomePage from "@/pages/NewHome.tsx";
+import MentoonsAboutPage from "@/pages/v2/about.tsx";
+import ProductPageV3 from "@/pages/v3/productPageV3.tsx";
 
 const Cart = lazy(() => import("../pages/Cart"));
 const ComicsPageV2 = lazy(() => import("../pages/ComicsPageV2"));
@@ -74,7 +75,7 @@ export const routes = [
   },
   { path: "/sign-up", element: <Register /> },
   { path: "/sign-in", element: <LogIn /> },
-  { path: "/about-mentoons", element: <AboutMentoons /> },
+  { path: "/about-mentoons", element: <MentoonsAboutPage /> },
   { path: "/mentoons-works", element: <HowMentoonsWork /> },
   { path: "/products", element: <ProductsPage /> },
   {
@@ -163,7 +164,8 @@ export const routes = [
   { path: "/report", element: <DailyReport /> },
   { path: "/other-product/:productId", element: <OtherProduct /> },
   { path: "/meetups", element: <LetsRevive /> },
-  { path: "/new-banner", element: <NewBanner /> },
+  { path: "/new-home", element: <NewHomePage /> },
+  { path: "sample", element: <ProductPageV3 /> },
 ];
 
 export const NotFoundPage = NotFound;
