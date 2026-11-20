@@ -1,5 +1,5 @@
 import { FOOTER_PAGELINKS, SOCIAL_LINKS } from "@/constant";
-import { MdEmail, MdLocationOn, MdPlayCircleFilled } from "react-icons/md";
+import { MdEmail, MdLocationOn } from "react-icons/md";
 import { PiPhoneCallFill } from "react-icons/pi";
 import { SiFacebook, SiInstagram, SiWhatsapp, SiYoutube } from "react-icons/si";
 
@@ -20,16 +20,16 @@ interface LinkItem {
 //   "https://youtu.be/XXXXXXXXXXX"
 //   "https://yourdomain.com/videos/intro.mp4"
 // Leave empty ("") to show the placeholder.
-// ---------------------------------------------------------------
-const FOOTER_VIDEO_URL = "/assets/v3/footer/footerVideo.mp4";
+// // ---------------------------------------------------------------
+// const FOOTER_VIDEO_URL = "/assets/v3/footer/footerVideo.mp4";
 
 // Converts any YouTube link into an embeddable URL (returns null if not YouTube)
-const getYouTubeEmbedUrl = (url: string): string | null => {
-  const match = url.match(
-    /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/,
-  );
-  return match ? `https://www.youtube.com/embed/${match[1]}` : null;
-};
+// const getYouTubeEmbedUrl = (url: string): string | null => {
+//   const match = url.match(
+//     /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/,
+//   );
+//   return match ? `https://www.youtube.com/embed/${match[1]}` : null;
+// };
 
 // ---- section lookups (Products removed) ----
 const hasTitle = (title: string, key: string) =>
@@ -56,51 +56,51 @@ const comicHeading =
   "relative inline-block pb-1 text-2xl md:text-3xl tracking-[0.15em] uppercase text-black font-comic-chip drop-shadow-[2px_2px_0_rgba(255,255,255,0.7)] after:absolute after:left-0 after:bottom-0 after:h-1 after:w-full after:rounded-full after:bg-black after:content-['']";
 
 // ---- Video block (placeholder until a URL is provided) ----
-const FooterVideo = ({
-  url,
-  className = "",
-}: {
-  url: string;
-  className?: string;
-}) => {
-  const embedUrl = url ? getYouTubeEmbedUrl(url) : null;
+// const FooterVideo = ({
+//   url,
+//   className = "",
+// }: {
+//   url: string;
+//   className?: string;
+// }) => {
+//   const embedUrl = url ? getYouTubeEmbedUrl(url) : null;
 
-  return (
-    <div
-      className={`w-full overflow-hidden bg-black border-4 border-black rounded-2xl ${comicShadow} ${className}`}
-    >
-      <div className="relative w-full aspect-video">
-        {!url ? (
-          // Placeholder
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-orange-600">
-            <MdPlayCircleFilled className="text-6xl text-white drop-shadow-[2px_2px_0_#000]" />
-            <p className="text-lg tracking-wider text-white font-comic-chip">
-              Video Coming Soon
-            </p>
-          </div>
-        ) : embedUrl ? (
-          // YouTube
-          <iframe
-            src={embedUrl}
-            title="Mentoons footer video"
-            className="absolute inset-0 w-full h-full"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
-        ) : (
-          // Direct video file (mp4, webm, etc.)
-          <video
-            src={url}
-            controls
-            playsInline
-            preload="metadata"
-            className="absolute inset-0 object-cover w-full h-full"
-          />
-        )}
-      </div>
-    </div>
-  );
-};
+//   return (
+//     <div
+//       className={`w-full overflow-hidden bg-black border-4 border-black rounded-2xl ${comicShadow} ${className}`}
+//     >
+//       <div className="relative w-full aspect-video">
+//         {!url ? (
+//           // Placeholder
+//           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-orange-600">
+//             <MdPlayCircleFilled className="text-6xl text-white drop-shadow-[2px_2px_0_#000]" />
+//             <p className="text-lg tracking-wider text-white font-comic-chip">
+//               Video Coming Soon
+//             </p>
+//           </div>
+//         ) : embedUrl ? (
+//           // YouTube
+//           <iframe
+//             src={embedUrl}
+//             title="Mentoons footer video"
+//             className="absolute inset-0 w-full h-full"
+//             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+//             allowFullScreen
+//           />
+//         ) : (
+//           // Direct video file (mp4, webm, etc.)
+//           <video
+//             src={url}
+//             controls
+//             playsInline
+//             preload="metadata"
+//             className="absolute inset-0 object-cover w-full h-full"
+//           />
+//         )}
+//       </div>
+//     </div>
+//   );
+// };
 
 const Footer = () => {
   const location = useLocation();
