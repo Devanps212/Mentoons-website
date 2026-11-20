@@ -10,6 +10,8 @@ interface ApiResponse<T = any> {
 
 type YesNo = "YES" | "NO" | "";
 
+// What the employee sends.
+// "Did as per discussed" is NOT here: only the admin sets it.
 export interface DailyReportPayload {
   date: string; // "YYYY-MM-DD"
   task: string;
@@ -18,14 +20,14 @@ export interface DailyReportPayload {
   complete: YesNo;
   reason: string;
   plan: string;
-  didAsDiscussed: YesNo;
 }
 
-// What the server sends back (signature fields are set by the admin only)
+// What the server sends back (didAsDiscussed and signature fields are set by the admin only)
 export interface DailyReportRecord extends DailyReportPayload {
   _id?: string;
   employeeId?: string;
   employeeName?: string | null;
+  didAsDiscussed?: YesNo;
   late?: boolean;
   submittedAt?: string;
   signature?: string | null;
@@ -173,6 +175,32 @@ export const fetchAllReports = async (
       success: false,
       data: null,
       error: getErrorMessage(error, "Failed to fetch reports"),
+    };
+  }
+};
+
+// Admin marks "Did as per discussed" (YES / NO). Only works before the report is signed.
+export const setDidAsDiscussed = async (
+  id: string,
+  value: "YES" | "NO",
+  token?: string | null,
+): Promise<ApiResponse<{ message: string; report: DailyReportRecord }>> => {
+  try {
+    const response = await api.patch(
+      `${BASE_URL}/daily-report/${id}/discussed`,
+      { value },
+      authHeaders(token),
+    );
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error: any) {
+    console.error("Save discussed failed:", error);
+    return {
+      success: false,
+      data: null,
+      error: getErrorMessage(error, "Could not save your answer"),
     };
   }
 };

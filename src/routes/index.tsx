@@ -53,12 +53,13 @@ import AssessmentsPage from "@/pages/v3/assessment.tsx";
 import ProductPageV3 from "@/pages/v3/productPageV3.tsx";
 import RegisterWorkshopPage from "@/components/Workshop/WorkshopRegister.tsx";
 import WorkshopLearnPage from "@/components/Workshop/WorkshopLearn.tsx";
+import Workshopv2 from "@/pages/Workshopv2.tsx";
 // import ProductPageV3 from "@/pages/v3/productPageV3.tsx";
 
 const Cart = lazy(() => import("../pages/Cart"));
 const ComicsPageV2 = lazy(() => import("../pages/ComicsPageV2"));
 const Podcastv2 = lazy(() => import("../pages/Podcastv2"));
-const Workshopv2 = lazy(() => import("../pages/Workshopv2"));
+const Workshopv3 = lazy(() => import("../pages/v3/workshopsV3.tsx"));
 const FreeDownload = lazy(() => import("../pages/v2/user/freeDownloads.tsx"));
 const FAQ = lazy(() => import("../pages/faq.tsx"));
 const Plans = lazy(() => import("../components/common/Plans"));
@@ -98,7 +99,7 @@ export const routes = [
     element: <ComicsPageV2 />,
   },
   { path: "/free-download", element: <FreeDownload /> },
-  { path: "/mentoons-workshops", element: <Workshopv2 /> },
+  { path: "/mentoons-workshops", element: <Workshopv3 /> },
   {
     path: "/mentoons-podcast",
     element: <Podcastv2 />,
@@ -167,6 +168,7 @@ export const routes = [
   // { path: "/new-assessment", element: <AssessmentsPage /> },
   { path: "/workshop-register", element: <RegisterWorkshopPage /> },
   { path: "/workshop-learn", element: <WorkshopLearnPage /> },
+  { path: "/workshopv2", element: <Workshopv2 /> },
 ];
 
 export const NotFoundPage = NotFound;

@@ -764,11 +764,11 @@ export const FOOTER_PAGELINKS = [
         label: "Explore",
         url: "/joinus/explore",
       },
-      {
-        id: "AB_6",
-        label: "Feedback",
-        url: "/feedback",
-      },
+      // {
+      //   id: "AB_6",
+      //   label: "Feedback",
+      //   url: "/feedback",
+      // },
     ],
   },
   {

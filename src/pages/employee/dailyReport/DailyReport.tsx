@@ -7,6 +7,7 @@ import {
   ChevronLeft,
   ChevronRight,
   CheckCircle2,
+  Check,
   AlertCircle,
   CalendarDays,
   Loader2,
@@ -17,13 +18,11 @@ const LOGO_URL =
   "https://mentoons-website.s3.ap-northeast-1.amazonaws.com/logo/ec9141ccd046aff5a1ffb4fe60f79316.png";
 
 const DAY_LABELS = ["Su", "M", "Tu", "W", "Th", "F", "Sa"];
-// 0 = Sunday, 6 = Saturday. Change this to match your working days.
 const OFF_DAYS = [0, 6];
 
 type YesNo = "YES" | "NO" | "";
 type DayState = "submitted" | "missed" | "pending" | "off" | "future";
 
-// What the employee fills in
 interface ReportForm {
   task: string;
   notes: string;
@@ -31,19 +30,17 @@ interface ReportForm {
   complete: YesNo;
   reason: string;
   plan: string;
-  didAsDiscussed: YesNo;
 }
 
-// What comes back from the server (signature fields are set by the admin only)
 interface ReportRecord extends ReportForm {
-  date: string; // "YYYY-MM-DD"
+  date: string;
   submittedAt?: string;
+  didAsDiscussed?: YesNo;
   signature?: string | null;
   signedByName?: string | null;
   signedAt?: string | null;
 }
 
-/* ---------- date helpers (local time, no timezone surprises) ---------- */
 const toKey = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
     d.getDate(),
@@ -76,7 +73,6 @@ const emptyForm = (): ReportForm => ({
   complete: "",
   reason: "",
   plan: "",
-  didAsDiscussed: "",
 });
 
 const pickForm = (r: ReportRecord): ReportForm => ({
@@ -86,7 +82,6 @@ const pickForm = (r: ReportRecord): ReportForm => ({
   complete: r.complete || "",
   reason: r.reason || "",
   plan: r.plan || "",
-  didAsDiscussed: r.didAsDiscussed || "",
 });
 
 const dayStyles: Record<DayState, string> = {
@@ -112,6 +107,43 @@ const ruledStyle = {
   lineHeight: "28px",
 };
 
+const YesNoMark = ({ value }: { value?: string }) => (
+  <div className="flex gap-6">
+    {(["YES", "NO"] as const).map((v) => {
+      const selected = value === v;
+      const filled =
+        v === "YES"
+          ? "bg-green-600 border-green-600"
+          : "bg-red-600 border-red-600";
+
+      return (
+        <div
+          key={v}
+          className="flex items-center gap-2"
+          aria-label={`${v}${selected ? " (selected)" : ""}`}
+        >
+          <span
+            className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${
+              selected ? filled : "bg-white border-gray-400"
+            }`}
+          >
+            {selected && (
+              <Check className="w-5 h-5 text-white" strokeWidth={3.5} />
+            )}
+          </span>
+          <span
+            className={`text-lg italic font-extrabold ${
+              selected ? "text-gray-900" : "text-gray-400"
+            }`}
+          >
+            {v}
+          </span>
+        </div>
+      );
+    })}
+  </div>
+);
+
 const DailyReport = () => {
   const { getToken } = useAuth();
   const { user } = useUser();
@@ -127,10 +159,8 @@ const DailyReport = () => {
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
 
-  // unsaved edits kept while the person switches between days
   const drafts = useRef<Record<string, ReportForm>>({});
 
-  /* ---------- derived values ---------- */
   const weekDays = Array.from({ length: 7 }, (_, i) =>
     toKey(addDays(weekStart, i)),
   );
@@ -145,11 +175,8 @@ const DailyReport = () => {
   const savedReport = reports[selectedKey];
   const selectedState = getDayState(selectedKey);
   const isPastDay = selectedKey < todayKey;
-  // The admin has signed this report, so it can no longer be changed.
   const signed = !!savedReport?.signature;
 
-  // Locked: weekends, future days, admin-signed reports, and past days
-  // that are already submitted. Today (until signed) and missed past days stay editable.
   const locked =
     selectedState === "off" ||
     selectedState === "future" ||
@@ -166,7 +193,6 @@ const DailyReport = () => {
 
   const canGoNext = toKey(addDays(weekStart, 7)) <= todayKey;
 
-  /* ---------- data ---------- */
   useEffect(() => {
     fetchWeek();
   }, [weekStart]);
@@ -218,7 +244,6 @@ const DailyReport = () => {
     if (!form.complete) missing.push("Complete or incomplete");
     if (form.complete === "NO" && !form.reason.trim())
       missing.push("Reason (required when not completed)");
-    if (!form.didAsDiscussed) missing.push("Did as per discussed");
 
     if (missing.length) {
       setErrors(missing);
@@ -234,8 +259,6 @@ const DailyReport = () => {
         return;
       }
 
-      // No signature here: only the admin can sign a report.
-      // The server works out the "late" flag itself.
       const result = await submitDailyReport(
         {
           date: selectedKey,
@@ -245,7 +268,6 @@ const DailyReport = () => {
           complete: form.complete,
           reason: form.complete === "NO" ? form.reason : "",
           plan: form.plan,
-          didAsDiscussed: form.didAsDiscussed,
         },
         token,
       );
@@ -271,7 +293,6 @@ const DailyReport = () => {
     }
   };
 
-  /* ---------- navigation ---------- */
   const selectDay = (k: string) => {
     if (getDayState(k) === "future") return;
     if (!reports[selectedKey]) drafts.current[selectedKey] = form;
@@ -286,13 +307,11 @@ const DailyReport = () => {
     setSelectedKey(monday > todayKey ? todayKey : monday);
   };
 
-  /* ---------- form helpers ---------- */
   const handle =
     (field: keyof ReportForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       setForm((f) => ({ ...f, [field]: e.target.value }));
 
-  /* ---------- UI ---------- */
   const statusChip = () => {
     if (selectedState === "off")
       return {
@@ -317,7 +336,6 @@ const DailyReport = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Banner */}
         <div className="bg-gradient-to-r from-blue-600 via-blue-500 to-blue-800 rounded-2xl p-6 md:p-8 text-white shadow-2xl mb-6 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
@@ -372,7 +390,6 @@ const DailyReport = () => {
           </div>
         </div>
 
-        {/* Week strip */}
         <div className="bg-white rounded-2xl shadow-lg p-4 md:p-5 mb-6">
           <div className="flex items-center gap-2 md:gap-3">
             <button
@@ -427,7 +444,6 @@ const DailyReport = () => {
           </div>
         </div>
 
-        {/* Status bar */}
         <div className="max-w-4xl mx-auto mb-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3 flex-wrap">
             <span
@@ -470,7 +486,6 @@ const DailyReport = () => {
           </div>
         )}
 
-        {/* Report sheet */}
         <div className="bg-white w-full max-w-4xl mx-auto border-2 border-gray-700 shadow-xl">
           <div className="flex justify-end gap-1 px-3 pt-2 pb-1">
             {DAY_LABELS.map((d, i) => (
@@ -521,7 +536,7 @@ const DailyReport = () => {
               />
             </div>
 
-            <div className="bg-[#ede8ec] flex items-center justify-center p-3">
+            <div className="hidden md:flex bg-[#ede8ec] items-center justify-center p-3">
               <span className="italic font-bold text-gray-800 text-base tracking-widest">
                 NOTES
               </span>
@@ -542,6 +557,9 @@ const DailyReport = () => {
               />
             </div>
             <div className="p-3 flex flex-col h-[260px] md:h-auto border-t-2 md:border-t-0 border-gray-700">
+              <div className="md:hidden italic font-bold text-gray-800 text-sm mb-2">
+                NOTES :
+              </div>
               <textarea
                 value={form.notes}
                 onChange={handle("notes")}
@@ -621,33 +639,20 @@ const DailyReport = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 border-t-2 border-gray-700">
-            <div className="md:border-r-2 border-gray-700 p-3 bg-white min-h-[110px] flex items-center gap-3 flex-wrap">
+            <div className="md:border-r-2 border-gray-700 p-3 bg-gray-50 min-h-[110px] flex items-center gap-3 flex-wrap">
               <span className="italic font-bold text-gray-800 text-sm whitespace-nowrap">
                 DID AS PER DISCUSSED :
               </span>
-              <div className="flex gap-4">
-                {(["YES", "NO"] as const).map((v) => (
-                  <label
-                    key={v}
-                    className="flex items-center gap-1 text-sm font-bold italic text-gray-800 cursor-pointer"
-                  >
-                    <input
-                      type="radio"
-                      name="didAsDiscussed"
-                      value={v}
-                      checked={form.didAsDiscussed === v}
-                      disabled={locked}
-                      onChange={() =>
-                        setForm((f) => ({ ...f, didAsDiscussed: v }))
-                      }
-                    />
-                    {v}
-                  </label>
-                ))}
-              </div>
+              {savedReport?.didAsDiscussed ? (
+                <YesNoMark value={savedReport.didAsDiscussed} />
+              ) : (
+                <span className="text-xs text-gray-400 italic flex items-center gap-1">
+                  <Lock className="w-3 h-3" />
+                  Admin marks this after review
+                </span>
+              )}
             </div>
 
-            {/* Signature: admin only. Employees see it locked. */}
             <div className="p-3 bg-gray-50 min-h-[110px] flex items-center gap-2 border-t-2 md:border-t-0 border-gray-700">
               <span className="italic font-bold text-gray-800 text-sm">
                 SIGNATURE :

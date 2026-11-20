@@ -32,7 +32,7 @@ interface LineProps {
   color: string;
 }
 
-const SLIDES: Slide[] = [
+export const SLIDES: Slide[] = [
   {
     src: "/assets/workshopv2/new/hasyaras-04.png",
     alt: "Hasyaras workshop",
@@ -699,8 +699,8 @@ const WorkshopBanner = ({
               </span>
             </h2>
             <p className="mt-5 max-w-sm text-base font-semibold text-[#1f1308]/75 xl:text-lg">
-              Four creative workshops, each one built around kids love
-              to do. Keep scrolling to explore what each one is all about.
+              Four creative workshops, each one built around kids love to do.
+              Keep scrolling to explore what each one is all about.
             </p>
             <div className="mt-6 hidden h-3 w-64 overflow-hidden rounded-full border-[3px] border-[#1f1308] bg-white lg:block">
               <div
